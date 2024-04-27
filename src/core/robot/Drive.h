@@ -95,7 +95,9 @@ enum OD_Entry_t {
     TARGET_VEL = 12,
     TARGET_TOR = 13,
     DIGITAL_IN = 14,
-    DIGITAL_OUT = 15
+    DIGITAL_OUT = 15,
+    EXTRA_ENCODER_POS = 16,
+    EXTRA_ENCODER_VEL = 17
 };
 
 /**
@@ -295,8 +297,10 @@ class Drive {
         {TARGET_POS, 4},
         {TARGET_VEL, 4},
         {TARGET_TOR, 2},
-        {DIGITAL_IN, 2},
-        {DIGITAL_OUT, 2}};
+        {DIGITAL_IN, 4},
+        {DIGITAL_OUT, 4},
+        {EXTRA_ENCODER_POS, 4},
+        {EXTRA_ENCODER_VEL, 4}};
 
     /**
      * \brief Map between the Commonly-used OD entries and their addresses and sub-index - used to generate PDO Configurations
@@ -314,7 +318,9 @@ class Drive {
         {TARGET_VEL, {0x60FF, 0x00}},
         {TARGET_TOR, {0x6071, 0x00}},
         {DIGITAL_IN, {0x60FD, 0x00}},
-        {DIGITAL_OUT, {0x60FE, 0x01}}};
+        {DIGITAL_OUT, {0x60FE, 0x01}},
+        {EXTRA_ENCODER_POS, {0x60E4, 0x02}},
+        {EXTRA_ENCODER_VEL, {0x60E5, 0x02}}};
 
     std::map<OD_Entry_t, void *> OD_MappedObjectAddresses = {
         {STATUS_WORD, (void *)&statusWord},
@@ -327,7 +333,9 @@ class Drive {
         {TARGET_VEL, (void *)&targetVel},
         {TARGET_TOR, (void *)&targetTor},
         {DIGITAL_IN, (void *)&digitalIn},
-        {DIGITAL_OUT, (void *)&digitalOut}};
+        {DIGITAL_OUT, (void *)&digitalOut},
+        {EXTRA_ENCODER_POS, (void *)&extraEncoderPos},
+        {EXTRA_ENCODER_VEL, (void *)&extraEncoderVel}};
 
    private:
     /**
@@ -345,6 +353,11 @@ class Drive {
     INTEGER16 targetTor=0;
     UNSIGNED16 digitalIn=0;
     UNSIGNED16 digitalOut=0;
+
+    UNSIGNED32 extraEncoderPos=0;
+    UNSIGNED32 extraEncoderVel=0;
+
+    bool posControlToggle=0;
     /**
      * \brief Current error state of the drive
      *
@@ -589,6 +602,7 @@ class Drive {
         * \return false The control word was previously 1 (i.e. unsuccessful set point confirm)
         */
     virtual bool posControlConfirmSP();
+    virtual bool posControlExecuteToggle();
 
     /**
         * \brief Sets the continous/not continous profile bit

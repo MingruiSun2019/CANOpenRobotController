@@ -143,6 +143,19 @@ bool Drive::posControlConfirmSP() {
     }
 }
 
+bool Drive::posControlExecuteToggle() {
+    // this half the actuation frequency
+    if (posControlToggle) {
+        posControlToggle = 0;
+        controlWord = 0x1F;
+        return true;
+    }
+    else {
+        posControlToggle = 1;
+        controlWord = 0x0F;
+    }
+}
+
 bool Drive::posControlSetContinuousProfile(bool continuous) {
     if (driveState == ENABLED){
         if (continuous){
