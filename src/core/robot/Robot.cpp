@@ -101,6 +101,21 @@ Eigen::VectorXd& Robot::getPosition() {
     return jointPositions_;
 }
 
+Eigen::VectorXd& Robot::getSpringPosition() {
+    //Initialise vector if not already done
+    if((unsigned int)jointSpringPositions_.size()!=joints.size()) {
+        jointSpringPositions_ = Eigen::VectorXd::Zero(joints.size());
+    }
+
+    //Update values
+    unsigned int i = 0;
+    for (auto j : joints) {
+        jointSpringPositions_[i] = j->getExtraPosition();
+        i++;
+    }
+    return jointSpringPositions_;
+}
+
 Eigen::VectorXd& Robot::getVelocity() {
     //Initialise vector if not already done
     if((unsigned int)jointVelocities_.size()!=joints.size()) {
@@ -114,6 +129,21 @@ Eigen::VectorXd& Robot::getVelocity() {
         i++;
     }
     return jointVelocities_;
+}
+
+Eigen::VectorXd& Robot::getSpringVelocity() {
+    //Initialise vector if not already done
+    if((unsigned int)jointSpringVelocities_.size()!=joints.size()) {
+        jointSpringVelocities_ = Eigen::VectorXd::Zero(joints.size());
+    }
+
+    //Update values
+    unsigned int i = 0;
+    for (auto j : joints) {
+        jointSpringVelocities_[i] = j->getExtraVelocity();
+        i++;
+    }
+    return jointSpringVelocities_;
 }
 
 Eigen::VectorXd& Robot::getTorque() {

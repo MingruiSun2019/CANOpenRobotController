@@ -60,10 +60,12 @@ class Joint {
      * The current state of the joint (i.e. the value), to be returned in SI units.
      */
     double position;
+    double extraPosition;
     /**
      * The current state of the joint velocity (i.e. the value), to be returned in SI units.
      */
     double velocity;
+    double extraVelocity;
     /**
      * The current state of the joint torque(i.e. the value), to be returned in SI units.
      */
@@ -77,6 +79,7 @@ class Joint {
      * The joint offset position in SI units. By default this is zero.s
      */
     double q0 = 0;
+    double extra_q0 = 0;
 
     /**
     * @brief Defines whether this joint is actuated or not (i.e. if it has a drive object attached )
@@ -204,6 +207,7 @@ class Joint {
     * @return double the current position of the joint
     */
     virtual double updatePosition();
+    virtual double updateExtraPosition();
 
     /**
     * @brief Fetches the joint velocity from the hardware (e.g. Drive) and converts to joint units
@@ -212,6 +216,7 @@ class Joint {
     * @return double the current velocity of the joint
     */
     virtual double updateVelocity();
+    virtual double updateExtraVelocity();
 
     /**
     * @brief Fetches the joint torque from the hardware (e.g. Drive) and converts to joint units
@@ -289,6 +294,7 @@ class Joint {
      * @return double The current internal representation of the value of the joint
      */
     double getPosition();
+    double getExtraPosition();
     /**
      * @brief Returns the internal value of the joint (e.g. del Angle, del length, depending on joint type)
      *
@@ -303,6 +309,7 @@ class Joint {
      * @return double The current internal representation of the value of the joint
      */
     double getVelocity();
+    double getExtraVelocity();
     /**
     * @brief Returns the internal value of the joint torque (e.g. del Angle, del length, depending on joint type)
     *
@@ -396,6 +403,7 @@ class Joint {
      *
      */
     void setPositionOffset(double qcalib);
+    void setExtraPositionOffset(double qcalib);
 
     /**
      * \brief get the drive status word value

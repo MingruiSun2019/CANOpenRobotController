@@ -26,7 +26,7 @@ class JointKE : public Joint {
     const short int sign;
     const double qMin, qMax, dqMin, dqMax, tauMin, tauMax;
     int encoderCounts = 10000;  //Encoder counts per turn
-    double reductionRatio = 22.;
+    double reductionRatio = 144.;  //to be calibrated
 
     double Ipeak;               //!< Drive max current (used in troque conversion)
     double motorTorqueConstant; //!< Motor torque constant
@@ -54,9 +54,15 @@ class JointKE : public Joint {
      */
     setMovementReturnCode_t safetyCheck();
 
+    EPOS4ControlMode setMode(EPOS4ControlMode driveMode_);
+
     setMovementReturnCode_t setPosition(double qd);
     setMovementReturnCode_t setVelocity(double dqd);
     setMovementReturnCode_t setTorque(double taud);
+
+    double getSpringPosition();
+
+    void setPosOffset(double posOffset);
 
     bool initNetwork();
 };

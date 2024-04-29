@@ -15,6 +15,17 @@
 #define EPOS4DRIVE_H_INCLUDED
 #include "Drive.h"
 
+enum EPOS4ControlMode {
+    CM_UNCONFIGURED = 0,
+    CM_PROFILE_POSITION_CONTROL = 1,
+    CM_CYCLIC_POSITION_CONTROL = 2,
+    CM_PROFILE_VELOCITY_CONTROL = 3,
+    CM_CYCLIC_VELOCITY_CONTROL = 4,
+    CM_TORQUE_CONTROL = 5,
+    CM_ERROR = -1,
+    CM_UNACTUATED_JOINT = -2
+};
+
 /**
  * \brief An implementation of the Drive Object, specifically for EPOS4 (currently used in the knee exoskeleton)
  *
@@ -58,8 +69,8 @@ class EPOS4Drive : public Drive {
          * \return true if successful
          * \return false if not
          */
-    bool initPosControl(motorProfile posControlMotorProfile);
-    bool initPosControl();
+    bool initProfilePosControl(motorProfile posControlMotorProfile);
+    bool initCyclicPosControl(motorProfile posControlMotorProfile);
 
     /**
          * Sets the drive to Velocity control with default parameters (through SDO messages)
@@ -69,8 +80,8 @@ class EPOS4Drive : public Drive {
          * \return true if successful
          * \return false if not
          */
-    bool initVelControl(motorProfile velControlMotorProfile);
-    bool initVelControl();
+    bool initProfileVelControl(motorProfile velControlMotorProfile);
+    bool initCyclicVelControl(motorProfile velControlMotorProfile);
 
     /**
          * Sets the drive to Torque control with default parameters (through SDO messages)
@@ -118,8 +129,9 @@ class EPOS4Drive : public Drive {
     std::vector<std::string> readSDOMessage(int address, int len);
     std::vector<std::string> generateCyclicPosControlConfigSDO(motorProfile positionProfile);
     std::vector<std::string> generateProfilePosControlConfigSDO(motorProfile positionProfile);
+    std::vector<std::string> generateProfileVelControlConfigSDO(motorProfile velocityProfile);
+    std::vector<std::string> generateCyclicVelControlConfigSDO(motorProfile velocityProfile);
 
-    std::vector<std::string> generateVelControlConfigSDO(motorProfile velocityProfile);
     std::vector<std::string> generateTorqueControlConfigSDO();
     std::vector<std::string> generateResetErrorSDO();
 };

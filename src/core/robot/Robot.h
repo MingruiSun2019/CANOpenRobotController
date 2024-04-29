@@ -57,7 +57,9 @@ class Robot {
     std::vector<InputDevice *> inputs;
 
     Eigen::VectorXd jointPositions_;
+    Eigen::VectorXd jointSpringPositions_;
     Eigen::VectorXd jointVelocities_;
+    Eigen::VectorXd jointSpringVelocities_;
     Eigen::VectorXd jointTorques_;
 
    public:
@@ -158,6 +160,8 @@ class Robot {
     * \return Eigen::VectorXd a reference to the vector of actual joint positions
     */
     Eigen::VectorXd& getPosition();
+    Eigen::VectorXd& getSpringPosition();
+
 
     /**
     * \brief Get the latest joints velocity
@@ -165,6 +169,7 @@ class Robot {
     * \return Eigen::VectorXd a reference to the vector of actual joint positions
     */
     Eigen::VectorXd& getVelocity();
+    Eigen::VectorXd& getSpringVelocity();
 
     /**
     * \brief Get the latest joints torque

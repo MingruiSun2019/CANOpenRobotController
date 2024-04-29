@@ -27,8 +27,44 @@ setMovementReturnCode_t JointKE::safetyCheck() {
     return SUCCESS;
 }
 
+EPOS4ControlMode JointKE::setMode(EPOS4ControlMode driveMode_) {
+    if (actuated) {
+        if (driveMode_ == CM_PROFILE_POSITION_CONTROL) {
+            if (((EPOS4Drive *) drive)->initProfilePosControl(posControlMotorProfile)) {
+                // driveMode = driveMode_;
+                driveMode = CM_POSITION_CONTROL;  // match the two enum later
+                return CM_PROFILE_POSITION_CONTROL;
+            }
+        } else if (driveMode_ == CM_CYCLIC_POSITION_CONTROL) {
+            if (((EPOS4Drive *) drive)->initCyclicPosControl(posControlMotorProfile)) {
+                d// driveMode = driveMode_;
+                driveMode = CM_POSITION_CONTROL;  // match the two enum later
+                return CM_CYCLIC_POSITION_CONTROL;
+            }
+        } else if (driveMode_ == CM_PROFILE_VELOCITY_CONTROL) {
+            if (((EPOS4Drive *) drive)->initProfileVelControl(velControlMotorProfile)) {
+                // driveMode = driveMode_;
+                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                return CM_PROFILE_VELOCITY_CONTROL;
+            }
+        } else if (driveMode_ == CM_CYCLIC_VELOCITY_CONTROL) {
+            if (((EPOS4Drive *) drive)->initCyclicVelControl(velControlMotorProfile)) {
+                // driveMode = driveMode_;
+                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                return CM_CYCLIC_VELOCITY_CONTROL;
+            }
+        } else if (driveMode_ == CM_TORQUE_CONTROL) {
+            if (drive->initTorqueControl()) {
+                // driveMode = driveMode_;
+                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                return CM_TORQUE_CONTROL;
+            }
+        }
+    }
+    return CM_UNACTUATED_JOINT;
+}
+
 setMovementReturnCode_t JointKE::setPosition(double qd) {
-    calibrated = 1;
     if (calibrated) {
         if (qd >= qMin && qd <= qMax && std::isfinite(qd)) {
                 if (actuated) {
@@ -92,6 +128,15 @@ setMovementReturnCode_t JointKE::setTorque(double taud) {
     } else {
         return OUTSIDE_LIMITS;
     }
+}
+
+double JointKE::getSpringPosition(){
+    return Joint::getExtraPosition();
+}
+
+void JointKE::setPosOffset(double safetyStopPos){
+    spdlog::debug("joint position offset done.");
+    Joint::setPositionOffset(safetyStopPos);
 }
 
 bool JointKE::initNetwork() {

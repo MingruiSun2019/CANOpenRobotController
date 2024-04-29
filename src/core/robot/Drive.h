@@ -530,12 +530,26 @@ class Drive {
            */
     virtual int getPos();
 
+        /**
+         * Returns the current extra encoder position from the motor drive (0x6064)
+         *
+         * \return The Extra encoder position from the motor drive
+         */
+    virtual int getExtraPos();
+
     /**
            * Returns the current velocity from the motor drive (0x606C)
            * Returns 0 if NODEID is 5 or 6: ankles. They have no OD entry.
            * \return Velocity from the motor drive
            */
     virtual int getVel();
+
+    /**
+         * Returns the current extra encoder velocity from the motor drive (0x606C)
+         * Returns 0 if NODEID is 5 or 6: ankles. They have no OD entry.
+         * \return The extra encoder velocity from the motor drive
+         */
+    virtual int getExtraVel();
 
     /**
            * Returns the current torque from the motor drive (0x6077)

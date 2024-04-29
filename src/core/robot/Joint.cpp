@@ -47,8 +47,14 @@ int Joint::getId() {
 double Joint::getPosition() {
     return position;
 }
+double Joint::getExtraPosition() {
+    return extraPosition;
+}
 double Joint::getVelocity() {
     return velocity;
+}
+double Joint::getExtraVelocity() {
+    return extraVelocity;
 }
 double Joint::getTorque() {
     return torque;
@@ -66,7 +72,9 @@ bool Joint::configureMasterPDOs(){
 
 bool Joint::updateValue() {
     position = updatePosition();
+    extraPosition = updateExtraPosition();
     velocity = updateVelocity();
+    extraVelocity = updateExtraVelocity();
     torque = updateTorque();
 
     return true;
@@ -175,6 +183,11 @@ void Joint::setPositionOffset(double qcalib = 0) {
     calibrated = true;
 }
 
+void Joint::setExtraPositionOffset(double qcalibExtra = 0) {
+    extra_q0 = driveUnitToJointPosition(drive->getExtraPos()) - qcalibExtra;
+    calibrated = false; // there is one more step to go in SEA: "setPositionOffset" 
+}
+
 double Joint::updatePosition() {
     if (actuated) {
         return driveUnitToJointPosition(drive->getPos()) - q0;
@@ -182,9 +195,23 @@ double Joint::updatePosition() {
     return 0;
 }
 
+double Joint::updateExtraPosition() {
+    if (actuated) {
+        return driveUnitToJointPosition(drive->getExtraPos()) - extra_q0;
+    }
+    return 0;
+}
+
 double Joint::updateVelocity() {
     if (actuated) {
         return driveUnitToJointVelocity(drive->getVel());
+    }
+    return 0;
+}
+
+double Joint::updateExtraVelocity() {
+    if (actuated) {
+        return driveUnitToJointVelocity(drive->getExtraVel());
     }
     return 0;
 }

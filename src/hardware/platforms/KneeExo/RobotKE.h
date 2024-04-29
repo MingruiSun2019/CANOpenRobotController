@@ -19,6 +19,8 @@
 #include "Robot.h"
 #include "SignalProcessing.h"
 
+#define KNEE 0
+
 
 typedef Eigen::Vector3d VM3; //!< Convenience alias for double  Vector of length 3
 typedef Eigen::VectorXd VX; //!< Generic (dynamic) size version required for compatibility w/ other libraries (FLNL)
@@ -85,7 +87,9 @@ class RobotKE : public Robot {
     std::vector<double> frictionCoul = {0.5, 0.5, 0.5};                             //!< Joint Coulomb (static) friction compensation coefficients
 
     std::vector<double> qLimits = {/*q1_min*/ -45 * M_PI / 180.,/*q1_max*/ 45 * M_PI / 180., /*q2_min*/ -15 * M_PI / 180., /*q2_max*/70 * M_PI / 180., /*q3_min*/ 0 * M_PI / 180., /*q3_max*/ 95 * M_PI / 180.}; //!< Joints limits (in rad)
-    VM3 qCalibration = {-38*M_PI/180., 70*M_PI/180., 95*M_PI/180.};             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+    VM3 qCalibration = {-120*M_PI/180.};             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+    VM3 qCalibrationSpring = {0*M_PI/180.};             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+
     /*@}*/
 
     KETool *endEffTool; //!< End-effector representation (transformation and mass)
@@ -164,6 +168,15 @@ class RobotKE : public Robot {
     */
     setMovementReturnCode_t applyPosition(std::vector<double> positions);
 
+   /**
+    * \brief Set the target shaft positions for each of the joints
+    *
+    * \param positions a vector of target positions - applicable for each of the actauted joints
+    * \return MovementCode representing success or failure of the application
+    */
+    setMovementReturnCode_t applySpringPosition(std::vector<double> positions, std::vector<double> positions);
+
+
     /**
     * \brief Set the target velocities for each of the joints
     *
@@ -185,7 +198,7 @@ class RobotKE : public Robot {
     * \brief Apply current configuration as calibration configuration using qcalibration such that:
     *  q=qcalibration in current configuration.
     */
-    void applyCalibration();
+    void applyCalibration(int step);
 
     bool isCalibrated() {return calibrated;}
     void decalibrate() {calibrated = false;}

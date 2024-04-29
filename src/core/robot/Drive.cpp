@@ -89,8 +89,16 @@ int Drive::getPos() {
     return actualPos;
 }
 
+int Drive::getExtraPos() {
+    return extraEncoderPos;
+}
+
 int Drive::getVel() {
     return actualVel;
+}
+
+int Drive::getExtraVel() {
+    return extraEncoderVel;
 }
 
 int Drive::getTorque() {

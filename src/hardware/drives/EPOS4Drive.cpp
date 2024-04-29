@@ -53,33 +53,31 @@ bool EPOS4Drive::initPosControl(motorProfile posControlMotorProfile) {
     return true;
 }
 
-bool EPOS4Drive::initPosControl() {
-    spdlog::debug("NodeID {} Initialising Position Control", NodeID);
+bool EPOS4Drive::initProfilePosControl(motorProfile posControlMotorProfile){
+    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
 
-    sendSDOMessages(Drive::generatePosControlConfigSDO());
+    sendSDOMessages(EPOS4Drive::generateProfilePosControlConfigSDO(posControlMotorProfile));
     return true;
 }
 
-bool EPOS4Drive::initVelControl(motorProfile velControlMotorProfile) {
-    spdlog::debug("NodeID {} Initialising Velocity Control", NodeID);
-    /**
-     * \todo create velControlMOTORPROFILE and test on exo
-     * \todo Tune velocity loop gain index 0x2381 to optimize V control
-     *
-    */
-    sendSDOMessages(generateVelControlConfigSDO(velControlMotorProfile));
+bool EPOS4Drive::initCyclicPosControl(motorProfile posControlMotorProfile){
+    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+
+    sendSDOMessages(EPOS4Drive::generateCyclicPosControlConfigSDO(posControlMotorProfile));
     return true;
 }
 
-bool EPOS4Drive::initVelControl() {
-    spdlog::debug("NodeID {} Initialising Velocity Control", NodeID);
-    resetError();
-    /**
-     * \todo create velControlMOTORPROFILE and test on exo
-     * \todo Tune velocity loop gain index 0x2381 to optimize V control
-     *
-    */
-    sendSDOMessages(Drive::generateVelControlConfigSDO());
+bool EPOS4Drive::initProfileVelControl(motorProfile velControlMotorProfile){
+    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+
+    sendSDOMessages(EPOS4Drive::generateProfileVelControlConfigSDO(velControlMotorProfile));
+    return true;
+}
+
+bool EPOS4Drive::initCyclicVelControl(motorProfile velControlMotorProfile){
+    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+
+    sendSDOMessages(EPOS4Drive::generateCyclicVelControlConfigSDO(velControlMotorProfile));
     return true;
 }
 
@@ -207,8 +205,110 @@ std::vector<std::string> EPOS4Drive::generateProfilePosControlConfigSDO(motorPro
     return CANCommands;
 };
 
-std::vector<std::string> EPOS4Drive::generateVelControlConfigSDO(motorProfile velocityProfile) {
-    return Drive::generateVelControlConfigSDO(velocityProfile); /*<!execute base class function*/
+std::vector<std::string> EPOS4Drive::generateProfileVelControlConfigSDO(motorProfile velocityProfile) {
+    // Define Vector to be returned as part of this method
+    std::vector<std::string> CANCommands;
+    // Define stringstream for ease of constructing hex strings
+    std::stringstream sstream;
+    // start drive
+    sstream << "[1] " << NodeID << " start";
+        CANCommands.push_back(sstream.str());
+        sstream.str(std::string());
+
+        // Enable Profile Velocity Mode 0x6060-00 to 0x03
+        sstream << "[1] " << NodeID << " write 0x6060 0 i8 3";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set up Max profile velocity 0x607F-00 (unit: rpm)
+        sstream << "[1] " << NodeID << " write 0x607F 0 u32 50000";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set up Profile acceleration 0x6083-00 (unit: rpm/s)
+        sstream << "[1] " << NodeID << " write 0x6083 0 u32 10000";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set up Profile deceleration 0x6084-00 (unit: rpm/s)
+        sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << velocityProfile.profileDeceleration;
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set up Quick stop deceleration 0x6085-00 (unit: rpm/s)
+        sstream << "[1] " << NodeID << " write 0x6085 0 u32 10000";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set up Motion profile type 0x6086-00 to 0 (Linear ramp)
+        sstream << "[1] " << NodeID << " write 0x6086 0 i16 0";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set Controlword to Shutdown (0x0006)
+        sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x0006";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+        // Set Controlword to Switch on & Enable (0x000F)
+        sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x000F";
+        CANCommands.push_back(sstream.str());
+        sstream.str("");
+
+    return CANCommands;
+};
+
+std::vector<std::string> EPOS4Drive::generateCyclicVelControlConfigSDO(motorProfile velocityProfile) {
+    // Define Vector to be returned as part of this method
+    std::vector<std::string> CANCommands;
+    // Define stringstream for ease of constructing hex strings
+    std::stringstream sstream;
+    // start drive
+    sstream << "[1] " << NodeID << " start";
+    CANCommands.push_back(sstream.str());
+    sstream.str(std::string());
+
+    // Enable Cyclic Synchronous Velocity Mode 0x6060-00 to 0x09
+    sstream << "[1] " << NodeID << " write 0x6060 0 i8 9";
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set up Max motor speed 0x6080-00
+    sstream << "[1] " << NodeID << " write 0x6080 0 u32 " << velocityProfile.maxMotorSpeed;
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set up Max gear input speed 0x3003-03
+    sstream << "[1] " << NodeID << " write 0x3003 3 u32 " << velocityProfile.maxGearInputSpeed;
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set up Profile deceleration 0x6084-00
+    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << velocityProfile.profileDeceleration;
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set up Quick stop deceleration 0x6085-00
+    sstream << "[1] " << NodeID << " write 0x6085 0 u32 " << velocityProfile.quickStopDeceleration;
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set up Interpolation time period 0x60C2-xx (assuming index 1 for period)
+    sstream << "[1] " << NodeID << " write 0x60C2 1 u16 " << velocityProfile.syncPeriod;
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set Controlword to Shutdown (0x0006)
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x0006";
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set Controlword to Switch on & Enable (0x000F)
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x000F";
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    return CANCommands;
 };
 
 std::vector<std::string> EPOS4Drive::generateTorqueControlConfigSDO() {
