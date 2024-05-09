@@ -27,36 +27,36 @@ setMovementReturnCode_t JointKE::safetyCheck() {
     return SUCCESS;
 }
 
-EPOS4ControlMode JointKE::setMode(EPOS4ControlMode driveMode_) {
+ControlMode JointKE::setMode(ControlMode driveMode_, motorProfile controlMotorProfile) {
     if (actuated) {
         if (driveMode_ == CM_PROFILE_POSITION_CONTROL) {
-            if (((EPOS4Drive *) drive)->initProfilePosControl(posControlMotorProfile)) {
+            if (((EPOS4Drive *) drive)->initProfilePosControl(controlMotorProfile)) {
                 // driveMode = driveMode_;
-                driveMode = CM_POSITION_CONTROL;  // match the two enum later
+                driveMode = CM_PROFILE_POSITION_CONTROL;  // match the two enum later
                 return CM_PROFILE_POSITION_CONTROL;
             }
         } else if (driveMode_ == CM_CYCLIC_POSITION_CONTROL) {
-            if (((EPOS4Drive *) drive)->initCyclicPosControl(posControlMotorProfile)) {
-                d// driveMode = driveMode_;
-                driveMode = CM_POSITION_CONTROL;  // match the two enum later
+            if (((EPOS4Drive *) drive)->initCyclicPosControl(controlMotorProfile)) {
+                // driveMode = driveMode_;
+                driveMode = CM_CYCLIC_POSITION_CONTROL;  // match the two enum later
                 return CM_CYCLIC_POSITION_CONTROL;
             }
         } else if (driveMode_ == CM_PROFILE_VELOCITY_CONTROL) {
-            if (((EPOS4Drive *) drive)->initProfileVelControl(velControlMotorProfile)) {
+            if (((EPOS4Drive *) drive)->initProfileVelControl(controlMotorProfile)) {
                 // driveMode = driveMode_;
-                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                driveMode = CM_PROFILE_VELOCITY_CONTROL;  // match the two enum later
                 return CM_PROFILE_VELOCITY_CONTROL;
             }
         } else if (driveMode_ == CM_CYCLIC_VELOCITY_CONTROL) {
-            if (((EPOS4Drive *) drive)->initCyclicVelControl(velControlMotorProfile)) {
+            if (((EPOS4Drive *) drive)->initCyclicVelControl(controlMotorProfile)) {
                 // driveMode = driveMode_;
-                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                driveMode = CM_CYCLIC_VELOCITY_CONTROL;  // match the two enum later
                 return CM_CYCLIC_VELOCITY_CONTROL;
             }
         } else if (driveMode_ == CM_TORQUE_CONTROL) {
             if (drive->initTorqueControl()) {
                 // driveMode = driveMode_;
-                driveMode = CM_VELOCITY_CONTROL;  // match the two enum later
+                driveMode = CM_TORQUE_CONTROL;  // match the two enum later
                 return CM_TORQUE_CONTROL;
             }
         }
@@ -65,27 +65,35 @@ EPOS4ControlMode JointKE::setMode(EPOS4ControlMode driveMode_) {
 }
 
 setMovementReturnCode_t JointKE::setPosition(double qd) {
+    calibrated = 1; // do this later
     if (calibrated) {
         if (qd >= qMin && qd <= qMax && std::isfinite(qd)) {
-                if (actuated) {
-                    if (std::isfinite(qd)) {
-                        if (driveMode == CM_POSITION_CONTROL) {
+            if (actuated) {
+                if (std::isfinite(qd)) {
+                    if (driveMode == CM_PROFILE_POSITION_CONTROL) {
 
-                            spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
+                        spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
 
-                            drive->setPos(jointPositionToDriveUnit(qd + q0));
-                            //drive->posControlExecuteToggle();
-                            return SUCCESS;
-                        } else {
-                            return INCORRECT_MODE;
-                        }
+                        drive->setPos(jointPositionToDriveUnit(qd + q0));
+                        drive->posControlExecuteToggle();
+                        return SUCCESS;
                     }
-                    else {
-                        spdlog::error("Joint {} set position to incorrect value ({})", id, qd);
-                        return OUTSIDE_LIMITS;
+                    else if (driveMode == CM_CYCLIC_POSITION_CONTROL){
+                        spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
+
+                        drive->setPos(jointPositionToDriveUnit(qd + q0));
+                        return SUCCESS;
+                    } else {
+                        return INCORRECT_MODE;
                     }
                 }
+                else {
+                    spdlog::error("Joint {} set position to incorrect value ({})", id, qd);
+                    return OUTSIDE_LIMITS;
+                }
+            } else {
                 return UNACTUATED_JOINT;
+            }
         } else {
             return OUTSIDE_LIMITS;
         }
@@ -95,20 +103,38 @@ setMovementReturnCode_t JointKE::setPosition(double qd) {
 }
 
 setMovementReturnCode_t JointKE::setVelocity(double dqd) {
-    //Position protection first only if calibrated
     if (calibrated) {
-        if (position <= qMin && dqd < 0) {
-            dqd = 0;
+        if (dqd >= dqMin && dqd <= dqMax && std::isfinite(dqd)) {
+            if (actuated) {
+                if (std::isfinite(dqd)) {
+                    if (driveMode == CM_PROFILE_VELOCITY_CONTROL) {
+
+                        spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
+
+                        drive->setVel(jointVelocityToDriveUnit(dqd));
+                        drive->velControlUpdateControlword();
+                        return SUCCESS;
+                    }
+                    else if (driveMode == CM_CYCLIC_VELOCITY_CONTROL){
+                        spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
+                        drive->setVel(jointVelocityToDriveUnit(dqd));
+                        return SUCCESS;
+                    } else {
+                        return INCORRECT_MODE;
+                    }
+                }
+                else {
+                    spdlog::error("Joint {} set position to incorrect value ({})", id, dqd);
+                    return OUTSIDE_LIMITS;
+                }
+            } else {
+                return UNACTUATED_JOINT;
+            }
+        } else {
+            return OUTSIDE_LIMITS;
         }
-        if (position >= qMax && dqd > 0) {
-            dqd = 0;
-        }
-    }
-    //Caped velocity
-    if (dqd >= dqMin && dqd <= dqMax && std::isfinite(dqd)) {
-        return Joint::setVelocity(dqd);
     } else {
-        return OUTSIDE_LIMITS;
+        return NOT_CALIBRATED;
     }
 }
 
@@ -132,6 +158,10 @@ setMovementReturnCode_t JointKE::setTorque(double taud) {
 
 double JointKE::getSpringPosition(){
     return Joint::getExtraPosition();
+}
+
+double JointKE::getSpringVelocity(){
+    return Joint::getExtraVelocity();
 }
 
 void JointKE::setPosOffset(double safetyStopPos){

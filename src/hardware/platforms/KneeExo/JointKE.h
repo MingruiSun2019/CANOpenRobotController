@@ -25,26 +25,38 @@ class JointKE : public Joint {
    private:
     const short int sign;
     const double qMin, qMax, dqMin, dqMax, tauMin, tauMax;
-    int encoderCounts = 10000;  //Encoder counts per turn
+    int encoderCounts = 4096;  //Encoder counts per turn
+    int outShaftEncCnt = 24000;  // Output shaft encoder counts per turn
     double reductionRatio = 144.;  //to be calibrated
 
     double Ipeak;               //!< Drive max current (used in troque conversion)
     double motorTorqueConstant; //!< Motor torque constant
 
+    public:
+    // Motor shaft
     double driveUnitToJointPosition(int driveValue) { return sign * driveValue * (2. * M_PI) / (double)encoderCounts / reductionRatio; };
     int jointPositionToDriveUnit(double jointValue) { return sign * jointValue / (2. * M_PI) * (double)encoderCounts * reductionRatio; };
-    double driveUnitToJointVelocity(int driveValue) { return sign * driveValue * (2. * M_PI) / 60. / 512. / (double)encoderCounts * 1875 / reductionRatio; };
-    int jointVelocityToDriveUnit(double jointValue) { return sign * jointValue / (2. * M_PI) * 60. * 512. * (double)encoderCounts / 1875 * reductionRatio; };
-    double driveUnitToJointTorque(int driveValue) { return sign * driveValue / Ipeak / 1.414 * motorTorqueConstant * reductionRatio; };
-    int jointTorqueToDriveUnit(double jointValue) { return sign * jointValue * Ipeak * 1.414 / motorTorqueConstant / reductionRatio; };
+    
+    // Output shaft
+    double outShaftUnitToJointPosition(int outSftValue) { return sign * outSftValue * (2. * M_PI) / (double)outShaftEncCnt; };
+    int jointPositionToOutShaftUnit(double jointValue) { return sign * jointValue / (2. * M_PI) * (double)outShaftEncCnt; };
+
+
+    // The unit of driveValue is rpm
+    double driveUnitToJointVelocity(int driveValue) { return sign * driveValue / reductionRatio; };
+    int jointVelocityToDriveUnit(double jointValue) { return sign * jointValue * reductionRatio; };
+    
+    // driveValue is the per tousand value of motor rated torque (see EPOS4 doc)
+    double driveUnitToJointTorque(int driveValue) { return sign * driveValue / 1000.0 * Ipeak * motorTorqueConstant * reductionRatio; };
+    int jointTorqueToDriveUnit(double jointValue) { return sign * jointValue * 1000.0 / Ipeak / motorTorqueConstant / reductionRatio; };
 
     /**
      * \brief motor drive position control profile paramaters, user defined.
      *
      */
-    motorProfile posControlMotorProfile{10, 10000, 10000};
+    motorProfile posControlMotorProfile{100, 10000, 10000};
 
-   public:
+   
     JointKE(int jointID, double q_min, double q_max, short int sign_ = 1, double dq_min = 0, double dq_max = 0, double tau_min = 0, double tau_max = 0, double i_peak = 45.0 /*Kinco FD123 peak current*/ , double motorTorqueConstant_ = 0.132 /*SMC series constant*/, EPOS4Drive *drive = NULL, const std::string& name="");
     ~JointKE();
     /**
@@ -54,13 +66,14 @@ class JointKE : public Joint {
      */
     setMovementReturnCode_t safetyCheck();
 
-    EPOS4ControlMode setMode(EPOS4ControlMode driveMode_);
+    ControlMode setMode(ControlMode driveMode_, motorProfile controlMotorProfile);
 
     setMovementReturnCode_t setPosition(double qd);
     setMovementReturnCode_t setVelocity(double dqd);
     setMovementReturnCode_t setTorque(double taud);
 
     double getSpringPosition();
+    double getSpringVelocity();
 
     void setPosOffset(double posOffset);
 

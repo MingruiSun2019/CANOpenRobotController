@@ -42,17 +42,6 @@ bool EPOS4Drive::resetError(){
     return true;
 }
 
-bool EPOS4Drive::initPosControl(motorProfile posControlMotorProfile) {
-    spdlog::debug("Node     ID {} Initialising Position Control", NodeID);
-
-    sendSDOMessages(generatePosControlConfigSDO(posControlMotorProfile));
-    /**
-     * \todo Move jointMinMap and jointMaxMap to set additional parameters (bit 5 in 0x6041 makes updates happen immediately)
-     *
-     */
-    return true;
-}
-
 bool EPOS4Drive::initProfilePosControl(motorProfile posControlMotorProfile){
     spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
 
@@ -61,21 +50,21 @@ bool EPOS4Drive::initProfilePosControl(motorProfile posControlMotorProfile){
 }
 
 bool EPOS4Drive::initCyclicPosControl(motorProfile posControlMotorProfile){
-    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+    spdlog::debug("NodeID {} Initialising Cyclic Position Control", NodeID);
 
     sendSDOMessages(EPOS4Drive::generateCyclicPosControlConfigSDO(posControlMotorProfile));
     return true;
 }
 
 bool EPOS4Drive::initProfileVelControl(motorProfile velControlMotorProfile){
-    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+    spdlog::debug("NodeID {} Initialising Profile Velocity Control", NodeID);
 
     sendSDOMessages(EPOS4Drive::generateProfileVelControlConfigSDO(velControlMotorProfile));
     return true;
 }
 
 bool EPOS4Drive::initCyclicVelControl(motorProfile velControlMotorProfile){
-    spdlog::debug("NodeID {} Initialising Profile Position Control", NodeID);
+    spdlog::debug("NodeID {} Initialising Cyclic Velocity Control", NodeID);
 
     sendSDOMessages(EPOS4Drive::generateCyclicVelControlConfigSDO(velControlMotorProfile));
     return true;
@@ -163,22 +152,22 @@ std::vector<std::string> EPOS4Drive::generateProfilePosControlConfigSDO(motorPro
     sstream.str("");
 
     // Set up Max profile velocity 0x607F-00 (unit: rpm)
-    sstream << "[1] " << NodeID << " write 0x607F 0 u32 50000";
+    sstream << "[1] " << NodeID << " write 0x607F 0 u32 4550";
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Profile velocity 0x6081-00 (unit: rpm)
-    sstream << "[1] " << NodeID << " write 0x6081 0 u32 1000";
+    sstream << "[1] " << NodeID << " write 0x6081 0 u32 " << std::dec << positionProfile.profileVelocity;
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Profile acceleration 0x6083-00  (unit: rpm/s)
-    sstream << "[1] " << NodeID << " write 0x6083 0 u32 10000";
+    sstream << "[1] " << NodeID << " write 0x6083 0 u32 " << std::dec << positionProfile.profileAcceleration;
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Profile deceleration 0x6084-00  (unit: rpm/s)
-    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << positionProfile.profileDeceleration;
+    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << std::dec << positionProfile.profileDeceleration;
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
@@ -221,17 +210,17 @@ std::vector<std::string> EPOS4Drive::generateProfileVelControlConfigSDO(motorPro
         sstream.str("");
 
         // Set up Max profile velocity 0x607F-00 (unit: rpm)
-        sstream << "[1] " << NodeID << " write 0x607F 0 u32 50000";
+        sstream << "[1] " << NodeID << " write 0x607F 0 u32 4550";
         CANCommands.push_back(sstream.str());
         sstream.str("");
 
         // Set up Profile acceleration 0x6083-00 (unit: rpm/s)
-        sstream << "[1] " << NodeID << " write 0x6083 0 u32 10000";
+        sstream << "[1] " << NodeID << " write 0x6083 0 u32 " << std::dec << velocityProfile.profileAcceleration;
         CANCommands.push_back(sstream.str());
         sstream.str("");
 
         // Set up Profile deceleration 0x6084-00 (unit: rpm/s)
-        sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << velocityProfile.profileDeceleration;
+        sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << std::dec << velocityProfile.profileDeceleration;
         CANCommands.push_back(sstream.str());
         sstream.str("");
 
@@ -274,27 +263,27 @@ std::vector<std::string> EPOS4Drive::generateCyclicVelControlConfigSDO(motorProf
     sstream.str("");
 
     // Set up Max motor speed 0x6080-00
-    sstream << "[1] " << NodeID << " write 0x6080 0 u32 " << velocityProfile.maxMotorSpeed;
+    sstream << "[1] " << NodeID << " write 0x6080 0 u32 4550";
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Max gear input speed 0x3003-03
-    sstream << "[1] " << NodeID << " write 0x3003 3 u32 " << velocityProfile.maxGearInputSpeed;
+    sstream << "[1] " << NodeID << " write 0x3003 3 u32 4550";
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Profile deceleration 0x6084-00
-    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << velocityProfile.profileDeceleration;
+    sstream << "[1] " << NodeID << " write 0x6084 0 u32 10000";  // for stopping only
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Quick stop deceleration 0x6085-00
-    sstream << "[1] " << NodeID << " write 0x6085 0 u32 " << velocityProfile.quickStopDeceleration;
+    sstream << "[1] " << NodeID << " write 0x6085 0 u32 10000";
     CANCommands.push_back(sstream.str());
     sstream.str("");
 
     // Set up Interpolation time period 0x60C2-xx (assuming index 1 for period)
-    sstream << "[1] " << NodeID << " write 0x60C2 1 u16 " << velocityProfile.syncPeriod;
+    sstream << "[1] " << NodeID << " write 0x60C2 1 u8 " << std::dec << CANUpdateLoopPeriodInms*2;
     CANCommands.push_back(sstream.str());
     sstream.str("");
 

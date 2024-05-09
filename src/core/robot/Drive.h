@@ -63,9 +63,11 @@ static std::map<std::string, std::string> SDO_Standard_Error = {
  */
 enum ControlMode {
     CM_UNCONFIGURED = 0,
-    CM_POSITION_CONTROL = 1,
-    CM_VELOCITY_CONTROL = 2,
-    CM_TORQUE_CONTROL = 3,
+    CM_PROFILE_POSITION_CONTROL = 1,
+    CM_CYCLIC_POSITION_CONTROL = 2,
+    CM_PROFILE_VELOCITY_CONTROL = 3,
+    CM_CYCLIC_VELOCITY_CONTROL = 4,
+    CM_TORQUE_CONTROL = 5,
     CM_ERROR = -1,
     CM_UNACTUATED_JOINT = -2
 };
@@ -247,8 +249,8 @@ class Drive {
     std::map<UNSIGNED8, std::vector<OD_Entry_t>> TPDO_MappedObjects = {
         {1, {STATUS_WORD}},
         {2, {ACTUAL_POS, ACTUAL_VEL}},
-        {3, {ACTUAL_TOR}},
-        {4, {DIGITAL_IN}}};
+        {3, {EXTRA_ENCODER_POS, EXTRA_ENCODER_VEL}},
+        {4, {ACTUAL_TOR}}};
 
     /**
      * \brief Map between the RPDO Number and their Mapped Objects
@@ -256,8 +258,8 @@ class Drive {
      */
     std::map<UNSIGNED8, std::vector<OD_Entry_t>> RPDO_MappedObjects = {
         {1, {CONTROL_WORD, DIGITAL_OUT}},
-        {2, {TARGET_POS}},
-        {3, {TARGET_VEL}},
+        {2, {TARGET_POS, TARGET_VEL}},
+        {3, {TARGET_POS}},
         {4, {TARGET_TOR}}};
 
     /**
@@ -617,6 +619,7 @@ class Drive {
         */
     virtual bool posControlConfirmSP();
     virtual bool posControlExecuteToggle();
+    virtual bool velControlUpdateControlword();
 
     /**
         * \brief Sets the continous/not continous profile bit

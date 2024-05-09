@@ -74,7 +74,9 @@ bool Drive::setVel(int velocity) {
 }
 
 bool Drive::setTorque(int torque) {
+    spdlog::debug("motor target torque: {}%", torque);
     spdlog::trace("Drive {} Writing {} to 0x{0:x}", NodeID, (short int)torque, OD_Addresses[TARGET_TOR][0]);
+
     targetTor = torque;
     return true;
 }
@@ -155,13 +157,17 @@ bool Drive::posControlExecuteToggle() {
     // this half the actuation frequency
     if (posControlToggle) {
         posControlToggle = 0;
-        controlWord = 0x1F;
+        controlWord = 0x3F;
         return true;
     }
     else {
         posControlToggle = 1;
         controlWord = 0x0F;
     }
+}
+
+bool Drive::velControlUpdateControlword() {
+    controlWord = 0x0F;
 }
 
 bool Drive::posControlSetContinuousProfile(bool continuous) {
@@ -495,10 +501,21 @@ std::vector<std::string> Drive::generateTorqueControlConfigSDO() {
     sstream << "[1] " << NodeID << " start";
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
+
     //enable Torque Control mode
-    sstream << "[1] " << NodeID << " write 0x6060 0 i8 4";
+    sstream << "[1] " << NodeID << " write 0x6060 0 i8 10";
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
+
+    // Set Controlword to Shutdown (0x0006)
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x0006";
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
+
+    // Set Controlword to Switch on & Enable (0x000F)
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x000F";
+    CANCommands.push_back(sstream.str());
+    sstream.str("");
 
     return CANCommands;
 }

@@ -16,15 +16,16 @@
 #include "Drive.h"
 
 enum EPOS4ControlMode {
-    CM_UNCONFIGURED = 0,
-    CM_PROFILE_POSITION_CONTROL = 1,
-    CM_CYCLIC_POSITION_CONTROL = 2,
-    CM_PROFILE_VELOCITY_CONTROL = 3,
-    CM_CYCLIC_VELOCITY_CONTROL = 4,
-    CM_TORQUE_CONTROL = 5,
-    CM_ERROR = -1,
-    CM_UNACTUATED_JOINT = -2
+    EPOS_UNCONFIGURED = 0,
+    EPOS_PROFILE_POSITION_CONTROL = 1,
+    EPOS_CYCLIC_POSITION_CONTROL = 2,
+    EPOS_PROFILE_VELOCITY_CONTROL = 3,
+    EPOS_CYCLIC_VELOCITY_CONTROL = 4,
+    EPOS_TORQUE_CONTROL = 5,
+    EPOS_ERROR = -1,
+    EPOS_UNACTUATED_JOINT = -2
 };
+
 
 /**
  * \brief An implementation of the Drive Object, specifically for EPOS4 (currently used in the knee exoskeleton)

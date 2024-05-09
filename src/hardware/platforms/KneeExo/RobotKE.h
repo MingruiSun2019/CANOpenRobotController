@@ -74,10 +74,10 @@ class RobotKE : public Robot {
     *  if one is provided to the constructor and the parameter is defined in the configuration file.
     */
     /* @{ */
-    double dqMax = 360 * M_PI / 180.;                                               //!< Max joint speed (rad.s-1)
-    double tauMax = 1.9 * 22;                                                       //!< Max joint torque (Nm)
-    std::vector<double> iPeakDrives = {42.0, 42.0, 42.0};                           //!< Drive max current
-    std::vector<double> motorCstt = {0.132, 0.132, 0.132};                          //!< Motor constants
+    double dqMax = 6;                                               //!< Max joint speed (rpm)
+    double tauMax = 26;                                                       //!< Max joint torque (Nm)
+    std::vector<double> iPeakDrives = {2.72, 2.72, 2.72};                           //!< Drive max current
+    std::vector<double> motorCstt = {0.0749, 0.0749, 0.0749};                          //!< Motor constants (Nm/A)
     std::vector<double> qSigns = {1, 1, -1};                                        //!< Joint direction (as compared to built-in drives direction)
     std::vector<double> linkLengths = {0.056, 0.15-0.015, 0.5, 0.325+0.15-0.015};   //!< Link lengths used for kinematic models (in m), excluding tool
     std::vector<double> massCoeff = {-1.30, -1.06};                                 //!< Mass coefficients (identified) used for gravity compensation (in kg), excluding tool
@@ -86,11 +86,18 @@ class RobotKE : public Robot {
     std::vector<double> frictionVis = {0.2, 0.2, 0.2};                              //!< Joint viscous friction compensation coefficients
     std::vector<double> frictionCoul = {0.5, 0.5, 0.5};                             //!< Joint Coulomb (static) friction compensation coefficients
 
-    std::vector<double> qLimits = {/*q1_min*/ -45 * M_PI / 180.,/*q1_max*/ 45 * M_PI / 180., /*q2_min*/ -15 * M_PI / 180., /*q2_max*/70 * M_PI / 180., /*q3_min*/ 0 * M_PI / 180., /*q3_max*/ 95 * M_PI / 180.}; //!< Joints limits (in rad)
-    VM3 qCalibration = {-120*M_PI/180.};             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
-    VM3 qCalibrationSpring = {0*M_PI/180.};             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+    std::vector<double> qLimits = {/*q1_min*/ -120 * M_PI / 180.,/*q1_max*/ 120 * M_PI / 180., /*q2_min*/ -15 * M_PI / 180., /*q2_max*/70 * M_PI / 180., /*q3_min*/ 0 * M_PI / 180., /*q3_max*/ 95 * M_PI / 180.}; //!< Joints limits (in rad)
+    double qCalibration = 0*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+    double qCalibrationSpring = -110*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+
+    // for debugging, skip calibration and jump right into position control
+    //double qCalibration = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
+    //double qCalibrationSpring = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
 
     /*@}*/
+    motorProfile controlMotorProfile{100, 10000, 10000};
+
+
 
     KETool *endEffTool; //!< End-effector representation (transformation and mass)
 
@@ -107,6 +114,14 @@ class RobotKE : public Robot {
     VX endEffForces;
     VX interactionForces;
     VX endEffVelocitiesFiltered;
+
+    // Controller
+    double errAcumu = 0.0;  // Accumulated error term for PI joint space velocity control
+    double massShankRob = 0.2;
+    double CoMShankRob = 0.12;
+    double lenShankRob = 0.24;
+    double JShankRob = massShankRob * pow(lenShankRob, 2) / 3;
+    double gravity = 9.8;
 
    public:
     /**
@@ -126,7 +141,8 @@ class RobotKE : public Robot {
        * \return true If all joints are successfully configured
        * \return false  If some or all joints fail the configuration
        */
-    bool initPositionControl();
+    bool initProfilePositionControl(motorProfile controlMotorProfile);
+    bool initCyclicPositionControl(motorProfile controlMotorProfile);
 
     /**
        * \brief Initialises all joints to velocity control mode.
@@ -134,7 +150,8 @@ class RobotKE : public Robot {
        * \return true If all joints are successfully configured
        * \return false  If some or all joints fail the configuration
        */
-    bool initVelocityControl();
+    bool initProfileVelocityControl(motorProfile controlMotorProfile);
+    bool initCyclicVelocityControl(motorProfile controlMotorProfile);
 
     /**
        * \brief Initialises all joints to torque control mode.
@@ -143,6 +160,16 @@ class RobotKE : public Robot {
        * \return false  If some or all joints fail the configuration
        */
     bool initTorqueControl();
+
+       /**
+    * \brief Set the target shaft positions for each of the joints
+    *
+    * \param positions a vector of target positions - applicable for each of the actauted joints
+    * \return MovementCode representing success or failure of the application
+    */
+    setMovementReturnCode_t applySpringPosition(double positions, double velocities); //joint space velocity control
+    setMovementReturnCode_t applySpringPositionTorControl(double positions, double velocities, double acc); // joint space torque control
+
 
    private:
 
@@ -166,16 +193,7 @@ class RobotKE : public Robot {
     * \param positions a vector of target positions - applicable for each of the actauted joints
     * \return MovementCode representing success or failure of the application
     */
-    setMovementReturnCode_t applyPosition(std::vector<double> positions);
-
-   /**
-    * \brief Set the target shaft positions for each of the joints
-    *
-    * \param positions a vector of target positions - applicable for each of the actauted joints
-    * \return MovementCode representing success or failure of the application
-    */
-    setMovementReturnCode_t applySpringPosition(std::vector<double> positions, std::vector<double> positions);
-
+    setMovementReturnCode_t applyPosition(double position);
 
     /**
     * \brief Set the target velocities for each of the joints

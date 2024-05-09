@@ -12,6 +12,11 @@ RobotKE::RobotKE(string robot_name, string yaml_config_file) :  Robot(robot_name
     //Check if YAML file exists and contain robot parameters
     initialiseFromYAML(yaml_config_file);
 
+      // Set up the motor profile
+    controlMotorProfile.profileVelocity = 100;  // rpm
+    controlMotorProfile.profileAcceleration = 10000;  // rpm/s
+    controlMotorProfile.profileDeceleration = 10000;  // rpm/s
+
     //TODO: to add joint specific parameters (reduction, torque constant) and associated YAML loading
 
     //Define the robot structure: each joint with limits and drive
@@ -70,13 +75,11 @@ bool RobotKE::loadParametersFromYAML(YAML::Node params) {
     fillParamVectorFromYaml(params_r["qSigns"], qSigns);
 
     if(params_r["qCalibration"]){
-        for(unsigned int i=0; i<qCalibration.size(); i++)
-            qCalibration[i]=params_r["qCalibration"][i].as<double>() * M_PI / 180.;
+        qCalibration=params_r["qCalibration"].as<double>() * M_PI / 180.;
     }
 
     if(params_r["qCalibrationSpring"]){
-        for(unsigned int i=0; i<qCalibrationSpring.size(); i++)
-            qCalibrationSpring[i]=params_r["qCalibrationSpring"][i].as<double>() * M_PI / 180.;
+        qCalibrationSpring=params_r["qCalibrationSpring"].as<double>() * M_PI / 180.;
     }
 
     //Create and replace existing tool if one specified
@@ -145,13 +148,12 @@ bool RobotKE::initialiseInputs() {
 
 void RobotKE::applyCalibration(int step) {
     // \todo make step enum
-    if (step == 1){
-        ((JointKE *)joints[0])->setPositionOffset(qCalibration[0]);
-        calibrated = true;
+    if (step == 2){
+        joints[0]->setPositionOffset(qCalibration);
         return;
     }
-    else if (step == 2) {
-        ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring[0]);
+    else if (step == 1) {
+        ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring);
         calibrated = false;
         return;
     }
@@ -223,11 +225,11 @@ void RobotKE::printJointStatus() {
     std::cout <<  std::noshowpos;
 }
 
-bool RobotKE::initPositionControl() {
+bool RobotKE::initProfilePositionControl(motorProfile controlMotorProfile) {
     spdlog::debug("Initialising Position Control on all joints ");
     bool returnValue = true;
     for (auto p : joints) {
-        if (((JointKE *)p)->setMode(CM_POSITION_CONTROL) != CM_POSITION_CONTROL) {
+        if (((JointKE *)p)->setMode(CM_PROFILE_POSITION_CONTROL, controlMotorProfile) != CM_PROFILE_POSITION_CONTROL) {
             // Something bad happened if were are here
             spdlog::error("Something bad happened");
             returnValue = false;
@@ -245,11 +247,35 @@ bool RobotKE::initPositionControl() {
     //TODO:CHECK STATUS 0x07
     return returnValue;
 }
-bool RobotKE::initVelocityControl() {
+
+bool RobotKE::initCyclicPositionControl(motorProfile controlMotorProfile) {
+    spdlog::debug("Initialising Position Control on all joints ");
+    bool returnValue = true;
+    for (auto p : joints) {
+        if (((JointKE *)p)->setMode(CM_CYCLIC_POSITION_CONTROL, controlMotorProfile) != CM_CYCLIC_POSITION_CONTROL) {
+            // Something bad happened if were are here
+            spdlog::error("Something bad happened");
+            returnValue = false;
+        }
+        // Put into ReadyToSwitchOn()
+        ((JointKE *)p)->readyToSwitchOn();
+    }
+
+    // Pause for a bit to let commands go
+    usleep(2000);
+    for (auto p : joints) {
+        ((JointKE *)p)->enable();
+    }
+
+    //TODO:CHECK STATUS 0x07
+    return returnValue;
+}
+
+bool RobotKE::initProfileVelocityControl(motorProfile controlMotorProfile) {
     spdlog::debug("Initialising Velocity Control on all joints ");
     bool returnValue = true;
     for (auto p : joints) {
-        if (((JointKE *)p)->setMode(CM_VELOCITY_CONTROL) != CM_VELOCITY_CONTROL) {
+        if (((JointKE *)p)->setMode(CM_PROFILE_VELOCITY_CONTROL, controlMotorProfile) != CM_PROFILE_VELOCITY_CONTROL) {
             // Something bad happened if were are here
             spdlog::error("Something bad happened");
             returnValue = false;
@@ -266,11 +292,34 @@ bool RobotKE::initVelocityControl() {
     //TODO:CHECK STATUS 0x07
     return returnValue;
 }
+
+bool RobotKE::initCyclicVelocityControl(motorProfile controlMotorProfile) {
+    spdlog::debug("Initialising Velocity Control on all joints ");
+    bool returnValue = true;
+    for (auto p : joints) {
+        if (((JointKE *)p)->setMode(CM_CYCLIC_VELOCITY_CONTROL, controlMotorProfile) != CM_CYCLIC_VELOCITY_CONTROL) {
+            // Something bad happened if were are here
+            spdlog::error("Something bad happened");
+            returnValue = false;
+        }
+        // Put into ReadyToSwitchOn()
+        ((JointKE *)p)->readyToSwitchOn();
+    }
+
+    // Pause for a bit to let commands go
+    usleep(2000);
+    for (auto p : joints) {
+        ((JointKE *)p)->enable();
+    }
+    //TODO:CHECK STATUS 0x07
+    return returnValue;
+}
+
 bool RobotKE::initTorqueControl() {
     spdlog::debug("Initialising Torque Control on all joints ");
     bool returnValue = true;
     for (auto p : joints) {
-        if (((JointKE *)p)->setMode(CM_TORQUE_CONTROL) != CM_TORQUE_CONTROL) {
+        if (((JointKE *)p)->setMode(CM_TORQUE_CONTROL, controlMotorProfile) != CM_TORQUE_CONTROL) {
             // Something bad happened if were are here
             spdlog::error("Something bad happened");
             returnValue = false;
@@ -288,7 +337,7 @@ bool RobotKE::initTorqueControl() {
     return returnValue;
 }
 
-setMovementReturnCode_t RobotKE::applyPosition(std::vector<double> positions) {
+setMovementReturnCode_t RobotKE::applyPosition(double position) {
     //spdlog::debug("In applyPosition");
     int i = 0;
     setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
@@ -297,7 +346,8 @@ setMovementReturnCode_t RobotKE::applyPosition(std::vector<double> positions) {
         returnValue = NOT_CALIBRATED;
     } else {
         for (auto p : joints) {
-            setMovementReturnCode_t setPosCode = ((JointKE *)p)->setPosition(positions[i]);
+            spdlog::debug("Joint {} position reference : {} ", position);
+            setMovementReturnCode_t setPosCode = ((JointKE *)p)->setPosition(position);
             if (setPosCode == INCORRECT_MODE) {
                 spdlog::error("Joint {} : is not in Position Control", p->getId());
                 returnValue = INCORRECT_MODE;
@@ -312,21 +362,63 @@ setMovementReturnCode_t RobotKE::applyPosition(std::vector<double> positions) {
     return returnValue;
 }
 
-setMovementReturnCode_t RobotKE::applySpringPosition(std::vector<double> positions, std::vector<double> velocities) {
+setMovementReturnCode_t RobotKE::applySpringPosition(double positions, double velocities) {
     // Make sure it is in velocity control mode
     setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
 
-    float gainP = 1;
-    float gainI = 1;
+    float gainP = 2;
+    float gainI = 0.4;
 
     auto p = joints[KNEE];
 
     float actualSpringPos = ((JointKE *)p)->getSpringPosition();
-    float targetSprigPos = positions[KNEE];
-    float targetSpringVel = velocities[KNEE];
+    float targetSprigPos = positions;
+    float targetSpringVel = velocities;
     // make it a PI
-    float targetVel = targetSpringVel + gainP * (targetSprigPos - actualSpringPos);
+    spdlog::debug("targetSpringVel: {}, targetSprigPos: {}, actualSpringPos: {}", targetSpringVel, targetSprigPos, actualSpringPos);
+
+    errAcumu += targetSprigPos - actualSpringPos;
+    float targetVel = targetSpringVel + gainP * (targetSprigPos - actualSpringPos);// + gainI * errAcumu;
+    spdlog::debug("Spring Position: {}, velocity control: {}", actualSpringPos, targetVel);
+    spdlog::debug("P term: {}, I term: {}", gainP * (targetSprigPos - actualSpringPos), gainI * errAcumu);
+
     setMovementReturnCode_t setPosCode = ((JointKE *)p)->setVelocity(targetVel);
+    if (setPosCode == INCORRECT_MODE) {
+        spdlog::error("Joint {} : is not in Position Control", p->getId());
+        returnValue = INCORRECT_MODE;
+    } else if (setPosCode != SUCCESS) {
+        // Something bad happened
+        spdlog::error("Joint {} position error : {} ", p->getId(), setMovementReturnCodeString[setPosCode]);
+        returnValue = UNKNOWN_ERROR;
+    }
+
+    return returnValue;
+}
+
+setMovementReturnCode_t RobotKE::applySpringPositionTorControl(double positions, double velocities, double acc) {
+    // Make sure it is in velocity control mode
+    setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
+
+    float gainP = 20;
+    float gainD = 10;
+
+    auto p = joints[KNEE];
+
+    float actualSpringPos = ((JointKE *)p)->getSpringPosition();
+    float actualSpringVel = ((JointKE *)p)->getSpringVelocity();
+    float targetSprigPos = positions;
+    float targetSpringVel = velocities;
+    // make it a PI
+    spdlog::debug("targetSpringVel: {}, targetSprigPos: {}, actualSpringPos: {}", targetSpringVel, targetSprigPos, actualSpringPos);
+
+    float errPos = targetSprigPos - actualSpringPos;
+    float errVel = targetSpringVel - actualSpringVel;
+    float targetAcc = ((JointKE *)p)->jointVelocityToDriveUnit(acc) + gainP * errPos + gainD * errVel;// + gainI * errAcumu;
+    float targetTor = 100*(massShankRob * pow(CoMShankRob, 2) + JShankRob)*targetAcc; // - CoMShankRob * massShankRob * gravity;
+    spdlog::debug("Spring Position: {}, torque control: {}", actualSpringPos, targetTor);
+    spdlog::debug("P term: {}, I term: {}", gainP * errPos, gainD * errVel);
+
+    setMovementReturnCode_t setPosCode = ((JointKE *)p)->setTorque(targetTor);
     if (setPosCode == INCORRECT_MODE) {
         spdlog::error("Joint {} : is not in Position Control", p->getId());
         returnValue = INCORRECT_MODE;
@@ -532,8 +624,7 @@ const VX& RobotKE::getInteractionForce() {
 
 setMovementReturnCode_t RobotKE::setJointPosition(double q) {
     //spdlog::debug("In RobotKE");
-    std::vector<double> pos{q};
-    return applyPosition(pos);
+    return applyPosition(q);
 }
 setMovementReturnCode_t RobotKE::setJointVelocity(double dq) {
     std::vector<double> vel{dq};

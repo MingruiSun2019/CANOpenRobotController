@@ -135,6 +135,37 @@ class Joint {
       * \param driveValue The drive value to be converted
       * \return The equivalent joint value for the given drive value
       */
+    virtual double outShaftUnitToJointPosition(int driveValue) { if(actuated){spdlog::error("Joint::error: using default conversion drive to joint units!");} return 0; };
+
+    /**
+      * \brief Converts from the joint velocity value to the equivalent value for the drive
+      *
+      * Notes:
+      * - The drive value is always an integer (due to the CANOpen specification)
+      *      and the joint value is always a double (data type of position)
+      * - This may be a linear relationship (e.g. degrees/s to encoder count/s) or a more
+      *      complicated one (e.g. linear actuator velocity to degrees/s) depending on the
+      *      structure of the device and system.
+      *
+      *
+      * \param jointValue The joint value to be converted
+      * \return int The equivalent drive value for the given joint value
+      */
+    virtual int jointPositionToOutShaftUnit(double jointValue) { if(actuated){spdlog::error("Joint::error: using default conversion drive to joint units!");} return 0; };
+
+    /**
+      * \brief Converts from the drive value to the equivalent value for the joint position
+      *
+      * Notes:
+      * - The drive value is always an integer (due to the CANOpen specification)
+      *      and the joint value is always a double (data type of position)
+      * - This may be a linear relationship (e.g. degrees to encoder counts) or a more
+      *      complicated one (e.g. linear actuator position to degrees) depending on the
+      *      structure of the device and system.
+      *
+      * \param driveValue The drive value to be converted
+      * \return The equivalent joint value for the given drive value
+      */
     virtual double driveUnitToJointPosition(int driveValue) { if(actuated){spdlog::error("Joint::error: using default conversion drive to joint units!");} return 0; };
 
     /**
@@ -182,7 +213,7 @@ class Joint {
       * \param jointValue The joint value to be converted
       * \return int The equivalent drive value for the given joint value
       */
-    virtual int jointTorqueToDriveUnit(double jointValue) { if(actuated){spdlog::error("Joint::error: using default conversion drive to joint units!");} return 0; };
+    virtual int jointTorqueToDriveUnit(double jointValue) {spdlog::debug("In here"); if(actuated){spdlog::error("Joint::error: using default conversion drive to joint units!");} return 0; };
 
     /**
       * \brief Converts from the drive value to the equivalent value for the joint position

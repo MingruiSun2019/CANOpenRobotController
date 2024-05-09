@@ -82,15 +82,15 @@ bool Joint::updateValue() {
 
 ControlMode Joint::setMode(ControlMode driveMode_, motorProfile profile) {
     if (actuated) {
-        if (driveMode_ == CM_POSITION_CONTROL) {
+        if (driveMode_ == CM_CYCLIC_POSITION_CONTROL) {
             if (drive->initPosControl(profile)) {
                 driveMode = driveMode_;
-                return CM_POSITION_CONTROL;
+                return CM_CYCLIC_POSITION_CONTROL;
             }
-        } else if (driveMode_ == CM_VELOCITY_CONTROL) {
+        } else if (driveMode_ == CM_CYCLIC_VELOCITY_CONTROL) {
             if (drive->initVelControl(profile)) {
                 driveMode = driveMode_;
-                return CM_VELOCITY_CONTROL;
+                return CM_CYCLIC_VELOCITY_CONTROL;
             }
         } else if (driveMode_ == CM_TORQUE_CONTROL) {
             if (drive->initTorqueControl()) {
@@ -104,15 +104,15 @@ ControlMode Joint::setMode(ControlMode driveMode_, motorProfile profile) {
 
 ControlMode Joint::setMode(ControlMode driveMode_) {
     if (actuated) {
-        if (driveMode_ == CM_POSITION_CONTROL) {
+        if (driveMode_ == CM_CYCLIC_POSITION_CONTROL) {
             if (drive->initPosControl()) {
                 driveMode = driveMode_;
-                return CM_POSITION_CONTROL;
+                return CM_CYCLIC_POSITION_CONTROL;
             }
-        } else if (driveMode_ == CM_VELOCITY_CONTROL) {
+        } else if (driveMode_ == CM_CYCLIC_VELOCITY_CONTROL) {
             if (drive->initVelControl()) {
                 driveMode = driveMode_;
-                return CM_VELOCITY_CONTROL;
+                return CM_CYCLIC_VELOCITY_CONTROL;
             }
         } else if (driveMode_ == CM_TORQUE_CONTROL) {
             if (drive->initTorqueControl()) {
@@ -127,7 +127,7 @@ ControlMode Joint::setMode(ControlMode driveMode_) {
 setMovementReturnCode_t Joint::setPosition(double desQ) {
     if (actuated) {
         if (std::isfinite(desQ)) {
-            if (driveMode == CM_POSITION_CONTROL) {
+            if (driveMode == CM_CYCLIC_POSITION_CONTROL) {
                 drive->setPos(jointPositionToDriveUnit(desQ + q0));
                 drive->posControlConfirmSP();
                 return SUCCESS;
@@ -146,7 +146,8 @@ setMovementReturnCode_t Joint::setPosition(double desQ) {
 setMovementReturnCode_t Joint::setVelocity(double velocity) {
     if (actuated) {
         if (std::isfinite(velocity)) {
-            if (driveMode == CM_VELOCITY_CONTROL) {
+            if (driveMode == CM_CYCLIC_VELOCITY_CONTROL) {
+                spdlog::debug("Drive val: {}", jointVelocityToDriveUnit(velocity));
                 drive->setVel(jointVelocityToDriveUnit(velocity));
                 return SUCCESS;
             } else {
@@ -184,7 +185,8 @@ void Joint::setPositionOffset(double qcalib = 0) {
 }
 
 void Joint::setExtraPositionOffset(double qcalibExtra = 0) {
-    extra_q0 = driveUnitToJointPosition(drive->getExtraPos()) - qcalibExtra;
+    extra_q0 = outShaftUnitToJointPosition(drive->getExtraPos()) - qcalibExtra;
+    // spdlog::debug("extra_q0: {}, qcalibExtra: {}", extra_q0, qcalibExtra);
     calibrated = false; // there is one more step to go in SEA: "setPositionOffset" 
 }
 
@@ -197,7 +199,9 @@ double Joint::updatePosition() {
 
 double Joint::updateExtraPosition() {
     if (actuated) {
-        return driveUnitToJointPosition(drive->getExtraPos()) - extra_q0;
+        // spdlog::debug("Get Pos: extra_q0: {}, jointValue: {}", extra_q0, outShaftUnitToJointPosition(drive->getExtraPos()));
+
+        return outShaftUnitToJointPosition(drive->getExtraPos()) - extra_q0;
     }
     return 0;
 }
@@ -211,7 +215,7 @@ double Joint::updateVelocity() {
 
 double Joint::updateExtraVelocity() {
     if (actuated) {
-        return driveUnitToJointVelocity(drive->getExtraVel());
+        return drive->getExtraVel();
     }
     return 0;
 }
@@ -266,7 +270,7 @@ bool Joint::disable() {
 
 // For Position Control
 bool Joint::setPosControlContinuousProfile(bool continuous) {
-    if (drive->getState() == ENABLED  && driveMode  == CM_POSITION_CONTROL && actuated) {
+    if (drive->getState() == ENABLED  && driveMode  == CM_CYCLIC_POSITION_CONTROL && actuated) {
         return (drive->posControlSetContinuousProfile(continuous));
     }
     spdlog::error("SetPosControlContinuous: Drive is not enabled, in incorrect mode or not actuated");
