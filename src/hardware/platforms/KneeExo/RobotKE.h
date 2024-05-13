@@ -18,6 +18,7 @@
 #include "Joystick.h"
 #include "Robot.h"
 #include "SignalProcessing.h"
+#include "RobotousRFT.h"
 
 #define KNEE 0
 
@@ -90,6 +91,13 @@ class RobotKE : public Robot {
     double qCalibration = 0*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
     double qCalibrationSpring = -110*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
 
+    int ftSensorThighRecvID = 230;
+    int ftSensorThighTransID1 = 231;
+    int ftSensorThighTransID2 = 232;
+    int ftSensorShankRecvID = 236;
+    int ftSensorShankTransID1 = 237;
+    int ftSensorShankTransID2 = 238;
+
     // for debugging, skip calibration and jump right into position control
     //double qCalibration = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
     //double qCalibrationSpring = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
@@ -134,6 +142,7 @@ class RobotKE : public Robot {
 
     Keyboard *keyboard;
     Joystick *joystick;
+    std::vector<RobotousRFT*> ftsensors;
 
     /**
        * \brief Initialises all joints to position control mode.
@@ -221,6 +230,9 @@ class RobotKE : public Robot {
     bool isCalibrated() {return calibrated;}
     void decalibrate() {calibrated = false;}
 
+    int getCommandID();
+    Eigen::VectorXd& getForces();
+    bool initialiseSensors();
 
     /**
        * \brief Implementation of Pure Virtual function from Robot Base class.

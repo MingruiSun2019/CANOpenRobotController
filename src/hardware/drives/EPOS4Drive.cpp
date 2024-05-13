@@ -119,12 +119,12 @@ std::vector<std::string> EPOS4Drive::generateCyclicPosControlConfigSDO(motorProf
     sstream.str(std::string());
 
     // set up Controlword (shutdown)
-    sstream << "[1] " << NodeID << " write 0x6040 1 u16 " << 0x0006;
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 " << 0x0006;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
     // set up Controlword (shutdown)
-    sstream << "[1] " << NodeID << " write 0x6040 1 u16 " << 0x000F;
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 " << 0x000F;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 

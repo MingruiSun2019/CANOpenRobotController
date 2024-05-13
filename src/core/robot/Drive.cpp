@@ -74,9 +74,7 @@ bool Drive::setVel(int velocity) {
 }
 
 bool Drive::setTorque(int torque) {
-    spdlog::debug("motor target torque: {}%", torque);
     spdlog::trace("Drive {} Writing {} to 0x{0:x}", NodeID, (short int)torque, OD_Addresses[TARGET_TOR][0]);
-
     targetTor = torque;
     return true;
 }

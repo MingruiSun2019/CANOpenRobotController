@@ -22,6 +22,10 @@ RobotKE::RobotKE(string robot_name, string yaml_config_file) :  Robot(robot_name
     //Define the robot structure: each joint with limits and drive
     joints.push_back(new JointKE(0, qLimits[0], qLimits[1], qSigns[0], -dqMax, dqMax, -tauMax, tauMax, iPeakDrives[0], motorCstt[0], new EPOS4Drive(5), "q1"));
 
+    // Define the force/torque sensors
+    ftsensors.push_back(new RobotousRFT(ftSensorThighRecvID, ftSensorThighTransID1, ftSensorThighTransID2));
+    ftsensors.push_back(new RobotousRFT(ftSensorShankRecvID, ftSensorShankTransID1, ftSensorShankTransID2));
+
     //Possible inputs: keyboard and joystick
     inputs.push_back(keyboard = new Keyboard());
 
@@ -94,6 +98,31 @@ bool RobotKE::loadParametersFromYAML(YAML::Node params) {
     return true;
 }
 
+int RobotKE::getCommandID(){
+    spdlog::debug("Geting FT sensors ID");
+    return ftsensors[0]->getCommandID();
+}
+
+Eigen::VectorXd& RobotKE::getForces(){
+    spdlog::debug("Geting FT sensors ID");
+    return ftsensors[0]->getForces();
+}
+
+bool RobotKE::initialiseSensors(){
+    spdlog::debug("Initialising FT sensors");
+    ftsensors[0]->configureMasterPDOs();
+    usleep(10000);
+    ftsensors[1]->configureMasterPDOs();
+    usleep(10000);
+    spdlog::debug("Initialising FT sensors finished, start streaming");
+    ftsensors[0]->startStream();
+    usleep(10000);
+    ftsensors[1]->startStream();
+    usleep(10000);
+    spdlog::debug("FT sensors streaming started");
+    return true;
+}
+
 bool RobotKE::initialiseJoints() {
     return true;
 }
@@ -150,9 +179,11 @@ void RobotKE::applyCalibration(int step) {
     // \todo make step enum
     if (step == 2){
         joints[0]->setPositionOffset(qCalibration);
+        calibrated = true;
         return;
     }
     else if (step == 1) {
+        spdlog::debug("qCalibrationSpring: {}", qCalibrationSpring);
         ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring);
         calibrated = false;
         return;

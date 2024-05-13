@@ -72,14 +72,14 @@ setMovementReturnCode_t JointKE::setPosition(double qd) {
                 if (std::isfinite(qd)) {
                     if (driveMode == CM_PROFILE_POSITION_CONTROL) {
 
-                        spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
+                        //spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
 
                         drive->setPos(jointPositionToDriveUnit(qd + q0));
                         drive->posControlExecuteToggle();
                         return SUCCESS;
                     }
                     else if (driveMode == CM_CYCLIC_POSITION_CONTROL){
-                        spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
+                        //spdlog::debug("q0: {}, q: {}, q2: {}", q0, qd, jointPositionToDriveUnit(qd + q0));
 
                         drive->setPos(jointPositionToDriveUnit(qd + q0));
                         return SUCCESS;
