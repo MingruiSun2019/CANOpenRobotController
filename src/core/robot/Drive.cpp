@@ -27,6 +27,9 @@ Drive::~Drive() {
 
 
 int Drive::getNodeID() {
+    for (auto p : tpdos) {
+        spdlog::debug("ID ----------------->>>> TPDO (COB-ID: 0x{0:x})", p->getCOBID());
+    }
     return NodeID;
 }
 
@@ -183,6 +186,7 @@ bool Drive::posControlSetContinuousProfile(bool continuous) {
 
 bool Drive::configureMasterPDOs(){
     // Set up the PDOs in the OD here
+    spdlog::debug("Initialising Master PDOs ---------->>>>>>>>>>>>");
     for (unsigned int TPDO_Num = 1; TPDO_Num <= TPDO_MappedObjects.size(); TPDO_Num++) {
         generateEquivalentMasterRPDO(TPDO_MappedObjects[TPDO_Num], TPDO_COBID[TPDO_Num] + NodeID, 0xff);
     }
@@ -396,7 +400,7 @@ void Drive::generateEquivalentMasterTPDO(std::vector<OD_Entry_t> items, int COB_
     }
     // Add to the local (CORC-side) Object Dictionary
     tpdos.push_back(new TPDO(COB_ID, TPDOSyncRate, variables, variableSize, items.size()));
-    //spdlog::debug("Master TPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
+    spdlog::debug("Master TPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
 }
 
 std::vector<std::string> Drive::generatePosControlConfigSDO(motorProfile positionProfile) {

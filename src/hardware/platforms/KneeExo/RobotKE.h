@@ -142,7 +142,9 @@ class RobotKE : public Robot {
 
     Keyboard *keyboard;
     Joystick *joystick;
-    std::vector<RobotousRFT*> ftsensors;
+    RobotousRFT *ftsensor1;
+    RobotousRFT *ftsensor2;
+
 
     /**
        * \brief Initialises all joints to position control mode.
@@ -233,6 +235,9 @@ class RobotKE : public Robot {
     int getCommandID();
     Eigen::VectorXd& getForces();
     bool initialiseSensors();
+    bool startSensorStreaming();
+    bool stopSensorStreaming();
+
 
     /**
        * \brief Implementation of Pure Virtual function from Robot Base class.

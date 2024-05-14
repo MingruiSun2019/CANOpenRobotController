@@ -25,7 +25,8 @@ bool RobotousRFT::configureMasterPDOs() {
     UNSIGNED16 dataCmdSize[2] = {1,7};
     void *dataCmd[2] = {(void *) &cmdData, (void *) &cmdDataPad};
 
-    tpdo1 = new TPDO(commandID, 0xff, dataCmd, dataCmdSize, lengthCmd);
+    UNSIGNED32 u32ID = commandID;
+    tpdo1 = new TPDO(u32ID, 0xff, dataCmd, dataCmdSize, lengthCmd);
 
     //spdlog::info("RobotousRFT {} - RPDO {} Set", commandID, CO_setRPDO(&RPDOcommParaH, &RPDOMapParamH, RPDOCommEntryH, dataStoreRecordH, RPDOMapParamEntryH));
     UNSIGNED16 dataSize[8] = {1,1,1,1,1,1,1,1};
@@ -48,6 +49,7 @@ bool RobotousRFT::configureMasterPDOs() {
     rpdo1 = new RPDO(responseID1, 0xff, dataEntryH, dataSize, lengthData);
     rpdo2 = new RPDO(responseID2, 0xff, dataEntryL, dataSize, lengthData);
 
+    spdlog::debug("TPOD and RPDO of Robotous initialised");
     return true;
 }
 
@@ -74,10 +76,12 @@ void RobotousRFT::updateInput() {
 }
 
 Eigen::VectorXd& RobotousRFT::getForces() {
+    updateInput();
     return forces;
 }
 
 Eigen::VectorXd& RobotousRFT::getTorques() {
+    updateInput();
     return torques;
 }
 
