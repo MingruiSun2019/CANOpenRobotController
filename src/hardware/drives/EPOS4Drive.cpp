@@ -29,11 +29,11 @@ bool EPOS4Drive::init(motorProfile profile) {
     spdlog::debug("NodeID {} EPOS4Drive::init(motorProfile profile)", NodeID);
     preop();//Set preop first to disable PDO during initialisation
     //resetError();  //TODO: Do we really need it?
-    if(setMotorProfile(profile)) {
+    //if(setMotorProfile(profile)) {
         if(initPDOs()) {
             return true;
         }
-    }
+    //}
     return false;
 }
 bool EPOS4Drive::resetError(){

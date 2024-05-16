@@ -103,20 +103,16 @@ int RobotKE::getCommandID(){
     return ftsensor1->getCommandID();
 }
 
-Eigen::VectorXd& RobotKE::getForces(){
+Eigen::VectorXd& RobotKE::getForces(int sensNum, int ft){
     //spdlog::debug("Geting FT sensors ID");
-    return ftsensor1->getForces();
-}
-
-bool RobotKE::initialiseSensors(){
-    spdlog::debug("Initialising FT sensors");
-    ftsensor1->configureMasterPDOs();
-    usleep(10000);
-    ftsensor2->configureMasterPDOs();
-    usleep(10000);
-    spdlog::debug("Initialising FT sensors finished");
-
-    return true;
+    if (sensNum == 1) {
+        if (ft == 1)    return ftsensor1->getForces();
+        else     return ftsensor1->getTorques();
+    }
+    else {
+        if (ft == 1)    return ftsensor2->getForces();
+        else     return ftsensor2->getTorques();
+    }
 }
 
 bool RobotKE::startSensorStreaming(){
@@ -136,6 +132,14 @@ bool RobotKE::stopSensorStreaming(){
     ftsensor2->stopStream();
     usleep(10000);
     spdlog::debug("FT sensors streaming stopped");
+    return true;
+}
+
+bool RobotKE::sensorCalibration(){
+    spdlog::debug("FT sensors calibration started");
+    ftsensor1->setOffsets(ftsensor1->getForces(), ftsensor1->getTorques());
+    ftsensor2->setOffsets(ftsensor2->getForces(), ftsensor2->getTorques());
+    spdlog::debug("FT sensors calibration finished");
     return true;
 }
 
@@ -176,7 +180,7 @@ bool RobotKE::initialiseNetwork() {
         }
         #ifndef NOROBOT
         if (!joint_ready) {
-            spdlog::error("M3: Failed to enable joint {} (status: {})", n, joint->getDriveStatus());
+            spdlog::error("Knee Exo: Failed to enable joint {} (status: {})", n, joint->getDriveStatus());
             return false;
         }
         #endif

@@ -76,12 +76,10 @@ void RobotousRFT::updateInput() {
 }
 
 Eigen::VectorXd& RobotousRFT::getForces() {
-    updateInput();
     return forces;
 }
 
 Eigen::VectorXd& RobotousRFT::getTorques() {
-    updateInput();
     return torques;
 }
 

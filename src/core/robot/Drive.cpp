@@ -261,17 +261,17 @@ bool Drive::setMotorProfile(motorProfile profile) {
     std::stringstream sstream;
 
      //Set velocity profile
-    sstream << "[1] " << NodeID << " write 0x6081 0 i32 " << std::dec << profile.profileVelocity;
+    sstream << "[1] " << NodeID << " write 0x6081 0 u32 " << std::dec << profile.profileVelocity;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
     //Set acceleration profile
-    sstream << "[1] " << NodeID << " write 0x6083 0 i32 " << std::dec << profile.profileAcceleration;
+    sstream << "[1] " << NodeID << " write 0x6083 0 u32 " << std::dec << profile.profileAcceleration;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
     //Set deceleration profile
-    sstream << "[1] " << NodeID << " write 0x6084 0 i32 " << std::dec << profile.profileDeceleration;
+    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << std::dec << profile.profileDeceleration;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
@@ -418,17 +418,17 @@ std::vector<std::string> Drive::generatePosControlConfigSDO(motorProfile positio
     sstream.str(std::string());
 
     //Set velocity profile
-    sstream << "[1] " << NodeID << " write 0x6081 0 i32 " << std::dec << positionProfile.profileVelocity;
+    sstream << "[1] " << NodeID << " write 0x6081 0 u32 " << std::dec << positionProfile.profileVelocity;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
     //Set acceleration profile
-    sstream << "[1] " << NodeID << " write 0x6083 0 i32 " << std::dec << positionProfile.profileAcceleration;
+    sstream << "[1] " << NodeID << " write 0x6083 0 u32 " << std::dec << positionProfile.profileAcceleration;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 
     //Set deceleration profile
-    sstream << "[1] " << NodeID << " write 0x6084 0 i32 " << std::dec << positionProfile.profileDeceleration;
+    sstream << "[1] " << NodeID << " write 0x6084 0 u32 " << std::dec << positionProfile.profileDeceleration;
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
 

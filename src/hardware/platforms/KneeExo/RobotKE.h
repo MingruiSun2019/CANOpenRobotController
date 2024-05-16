@@ -233,10 +233,10 @@ class RobotKE : public Robot {
     void decalibrate() {calibrated = false;}
 
     int getCommandID();
-    Eigen::VectorXd& getForces();
-    bool initialiseSensors();
+    Eigen::VectorXd& getForces(int sensNum, int ft);
     bool startSensorStreaming();
     bool stopSensorStreaming();
+    bool sensorCalibration();
 
 
     /**
