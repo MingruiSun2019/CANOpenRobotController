@@ -17,7 +17,7 @@ project(CORC C CXX)
 #include(src/apps/X2DemoMachine/app.cmake)
 #include(src/apps/X2ROS2DemoMachine/app.cmake)
 #include(src/apps/LoggingDevice/app.cmake)
-include(../KEDemoMachine/app.cmake) ## example only, need to be defined
+include(../KEDemoMachine/app.cmake) ## example only, needfined to be de
 
 ## Comment to use actual hardware, uncomment for a nor robot (virtual) app
 #set(NO_ROBOT ON)
@@ -30,3 +30,8 @@ set(CORC_LOGGING_LEVEL DEBUG)
 
 ## CORC internal cmake logic
 include(corc.cmake)
+
+## Add JetsonGPIO
+#add_subdirectory(JetsonGPIO)
+# Link the JetsonGPIO to this project
+#target_link_libraries(CORC JetsonGPIO)
