@@ -86,10 +86,7 @@ list (APPEND INCLUDE_DIRS lib/spdlog/include/)
 if(USE_FLNL)
     list (APPEND INCLUDE_DIRS lib/FLNL/include/)
 endif()
-if(USE_JETSON)
-    list (APPEND INCLUDE_DIRS lib/JetsonGPIO/include/)
-    list (APPEND INCLUDE_DIRS lib/JetsonGPIO/)
-endif()
+
 #if(WITH_FOURIER_AIOS)
 #    list (APPEND INCLUDE_DIRS lib/fourier-cpp-sdk/src/)
 #    list (APPEND INCLUDE_DIRS lib/fourier-cpp-sdk/fourier/include/)
@@ -97,10 +94,6 @@ endif()
 
 if(USE_FLNL)
     add_subdirectory(lib/FLNL/)
-endif()
-
-if(USE_JETSON)
-    add_subdirectory(lib/JetsonGPIO/)
 endif()
 
 add_subdirectory(lib/yaml-cpp/)

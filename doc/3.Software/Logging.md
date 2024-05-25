@@ -13,7 +13,7 @@ This log is organised in several level of priorities: TRACE < DEBUG < INFO < WAR
 - CRITICAL: error leading to termination
     
 This log will produce outputs both on console (`cout`) and within a rotating log file (logs/CORC.log).
-    
+     
 When compiling your application you can select the desired logging level in the [CMakeLists.txt](../../CMakeLists.txt) by setting CORC_LOGGING_LEVEL to one of the above value: 
 keeping `set(CORC_LOGGING_LEVEL INFO)` (recommended level) will produce only INFO, WARN, ERROR and CRITICAL outputs for example.
     
@@ -40,7 +40,7 @@ This log allows you to record the states of the robot, sensors or any other appl
 ```
 
 This example will log the robot joint positions, velocities and torques in `logs/logexample.csv` at every loop execution. 
-  
+
 The logger support any basic types and Eigen vectors. References to values to log should all be registered (using `logHelper.add()`) before starting the logger (at the start of the StateMachine) and these references should be valid during the entire StateMachine execution.
   
 Additionnaly, custom logger can be created on the model of logHelper at any point of execution. In this case, the custom logger should be started using its `startLogger()` method and properly closed using `endLog()` method. Registered data to the custom logger would then be recorded at each call of the `recordLogData()` method between the start and end.

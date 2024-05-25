@@ -27,7 +27,7 @@ class JointKE : public Joint {
     const double qMin, qMax, dqMin, dqMax, tauMin, tauMax;
     int encoderCounts = 4096;  //Encoder counts per turn
     int outShaftEncCnt = 24000;  // Output shaft encoder counts per turn
-    double reductionRatio = 144.;  //to be calibrated
+    double reductionRatio = 144.0;  //to be calibrated
 
     double Ipeak;               //!< Drive max current (used in troque conversion)
     double motorTorqueConstant; //!< Motor torque constant
@@ -44,7 +44,7 @@ class JointKE : public Joint {
 
     // The unit of driveValue is rpm
     double driveUnitToJointVelocity(int driveValue) { return sign * driveValue / reductionRatio; };
-    int jointVelocityToDriveUnit(double jointValue) { return sign * jointValue * reductionRatio; };
+    int jointVelocityToDriveUnit(double jointValue) { return reductionRatio * jointValue; };
     
     // driveValue is the per tousand value of motor rated torque (see EPOS4 doc)
     double driveUnitToJointTorque(int driveValue) { return sign * driveValue / 1000.0 * Ipeak * motorTorqueConstant * reductionRatio; };

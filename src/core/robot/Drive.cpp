@@ -71,7 +71,7 @@ bool Drive::setPos(int position) {
 }
 
 bool Drive::setVel(int velocity) {
-    spdlog::trace("Drive {} Writing {} to 0x60FF", NodeID, velocity);
+    spdlog::debug("Drive {} Writing {} to 0x60FF", NodeID, velocity);
     targetVel = velocity;
     return true;
 }
@@ -188,10 +188,23 @@ bool Drive::configureMasterPDOs(){
     // Set up the PDOs in the OD here
     spdlog::debug("Initialising Master PDOs ---------->>>>>>>>>>>>");
     for (unsigned int TPDO_Num = 1; TPDO_Num <= TPDO_MappedObjects.size(); TPDO_Num++) {
-        generateEquivalentMasterRPDO(TPDO_MappedObjects[TPDO_Num], TPDO_COBID[TPDO_Num] + NodeID, 0xff);
+        if (TPDO_Num == 1) {
+            generateEquivalentMasterRPDO(TPDO_MappedObjects[TPDO_Num], TPDO_COBID[TPDO_Num] + NodeID, 0xff);
+        }
+        else {
+            generateEquivalentMasterRPDO(TPDO_MappedObjects[TPDO_Num], TPDO_COBID[TPDO_Num] + NodeID, 0x01);
+
+        }
     }
     for (unsigned int RPDO_Num = 1; RPDO_Num <= RPDO_MappedObjects.size(); RPDO_Num++) {
-        generateEquivalentMasterTPDO(RPDO_MappedObjects[RPDO_Num], RPDO_COBID[RPDO_Num] + NodeID, 0xff);
+        if (RPDO_Num == 1) {
+            generateEquivalentMasterTPDO(RPDO_MappedObjects[RPDO_Num], RPDO_COBID[RPDO_Num] + NodeID, 0xff);
+
+        }
+        else {
+            generateEquivalentMasterTPDO(RPDO_MappedObjects[RPDO_Num], RPDO_COBID[RPDO_Num] + NodeID, 0x01);
+           
+        }
     }
 
     return true;
@@ -233,19 +246,19 @@ bool Drive::initPDOs() {
     }
     spdlog::debug("Set up TARGET_POS RPDO on Node {}", NodeID);
     RPDO_Num = 2;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up TARGET_POS RPDO FAILED on node {}", NodeID);
         return false;
     }
     spdlog::debug("Set up TARGET_VEL RPDO on Node {}", NodeID);
     RPDO_Num = 3;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up TARGET_VEL RPDO FAILED on node {}", NodeID);
         return false;
     }
     spdlog::debug("Set up TARGET_TOR RPDO on Node {}", NodeID);
     RPDO_Num = 4;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up TARGET_TOR RPDO FAILED on node {}", NodeID);
         return false;
     }

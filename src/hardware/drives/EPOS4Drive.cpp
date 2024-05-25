@@ -447,21 +447,21 @@ bool EPOS4Drive::initPDOs() {
 
     spdlog::debug("Set up TARGET_POS RPDO on Node {}", NodeID);
     RPDO_Num = 2;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up TARGET_POS RPDO FAILED on node {}", NodeID);
         return false;
     }
 
     spdlog::debug("Set up TARGET_VEL RPDO on Node {}", NodeID);
     RPDO_Num = 3;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up ARGET_VEL RPDO FAILED on node {}", NodeID);
         return false;
     }
 
     spdlog::debug("Set up TARGET_TOR RPDO on Node {}", NodeID);
     RPDO_Num = 4;
-    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0xff)) < 0) {
+    if (sendSDOMessages(generateRPDOConfigSDO(RPDO_MappedObjects[RPDO_Num], RPDO_Num, RPDO_COBID[RPDO_Num] + NodeID, 0x01)) < 0) {
         spdlog::error("Set up TARGET_TOR RPDO FAILED on node {}", NodeID);
         return false;
     }

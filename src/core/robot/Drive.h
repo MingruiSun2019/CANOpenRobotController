@@ -258,7 +258,7 @@ class Drive {
      */
     std::map<UNSIGNED8, std::vector<OD_Entry_t>> RPDO_MappedObjects = {
         {1, {CONTROL_WORD, DIGITAL_OUT}},
-        {2, {TARGET_POS, TARGET_VEL}},
+        {2, {TARGET_VEL}},
         {3, {TARGET_POS}},
         {4, {TARGET_TOR}}};
 
