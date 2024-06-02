@@ -27,7 +27,7 @@ class JointKE : public Joint {
     const double qMin, qMax, dqMin, dqMax, tauMin, tauMax;
     int encoderCounts = 4096;  //Encoder counts per turn
     int outShaftEncCnt = 24000;  // Output shaft encoder counts per turn
-    double reductionRatio = 144.0;  //to be calibrated
+    double reductionRatio = 146.2;  //to be calibrated
 
     double Ipeak;               //!< Drive max current (used in troque conversion)
     double motorTorqueConstant; //!< Motor torque constant
