@@ -19,6 +19,7 @@
 #include "Robot.h"
 #include "SignalProcessing.h"
 #include "RobotousRFT.h"
+#include "Teensy32.h"
 
 #define KNEE 0
 
@@ -91,12 +92,26 @@ class RobotKE : public Robot {
     double qCalibration = 0*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
     double qCalibrationSpring = -110*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
 
-    int ftSensorThighRecvID = 230;
-    int ftSensorThighTransID1 = 231;
-    int ftSensorThighTransID2 = 232;
-    int ftSensorShankRecvID = 236;
-    int ftSensorShankTransID1 = 237;
-    int ftSensorShankTransID2 = 238;
+    int ftSensorThighRecvID = 111;
+    int ftSensorThighTransID1 = 112;
+    int ftSensorThighTransID2 = 113;
+    int ftSensorShankRecvID = 230;
+    int ftSensorShankTransID1 = 231;
+    int ftSensorShankTransID2 = 232;
+
+    int tsy1_ID_A1 = 610;  // 0x262
+    int tsy1_ID_A2 = 611;
+    int tsy1_ID_A3 = 612;
+    int tsy1_ID_B1 = 613;
+    int tsy1_ID_B2 = 614;
+    int tsy1_ID_B3 = 615;
+
+    int tsy2_ID_A1 = 616; // 0x268
+    int tsy2_ID_A2 = 617;
+    int tsy2_ID_A3 = 618;
+    int tsy2_ID_B1 = 619;
+    int tsy2_ID_B2 = 620;
+    int tsy2_ID_B3 = 621;
 
     // for debugging, skip calibration and jump right into position control
     //double qCalibration = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
@@ -104,8 +119,6 @@ class RobotKE : public Robot {
 
     /*@}*/
     motorProfile controlMotorProfile{100, 10000, 10000};
-
-
 
     KETool *endEffTool; //!< End-effector representation (transformation and mass)
 
@@ -144,7 +157,10 @@ class RobotKE : public Robot {
     Joystick *joystick;
     RobotousRFT *ftsensor1;
     RobotousRFT *ftsensor2;
+    Teensy *tsy1;
+    Teensy *tsy2;
 
+    double getCalibSpringPos() {return qCalibrationSpring;}
 
     /**
        * \brief Initialises all joints to position control mode.
@@ -227,7 +243,8 @@ class RobotKE : public Robot {
     * \brief Apply current configuration as calibration configuration using qcalibration such that:
     *  q=qcalibration in current configuration.
     */
-    void applyCalibration(int step);
+    void applyCalibrationSpring();
+    void applyCalibrationMotor(double springAngle);
 
     bool isCalibrated() {return calibrated;}
     void decalibrate() {calibrated = false;}
@@ -238,6 +255,7 @@ class RobotKE : public Robot {
     bool stopSensorStreaming();
     bool sensorCalibration();
 
+    Eigen::VectorXd& getTeensyData(Teensy *tsy, int imu_id, int data_id);
 
     /**
        * \brief Implementation of Pure Virtual function from Robot Base class.

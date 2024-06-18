@@ -2,6 +2,7 @@
 
 Joystick::Joystick(int id) : initialised(false) {
     snprintf(device, 50, "/dev/input/js%d",id);
+    spdlog::info("device {}", device);
     js = open(device, O_RDONLY | O_NONBLOCK);
     if (js == -1) {
         spdlog::info("Could not open joystick ({})", device);

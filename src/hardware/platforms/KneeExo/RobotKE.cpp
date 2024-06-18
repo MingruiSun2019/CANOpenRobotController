@@ -25,9 +25,15 @@ RobotKE::RobotKE(string robot_name, string yaml_config_file) :  Robot(robot_name
     // Define the force/torque sensors
     inputs.push_back(ftsensor1 = new RobotousRFT(ftSensorThighRecvID, ftSensorThighTransID1, ftSensorThighTransID2));
     inputs.push_back(ftsensor2 = new RobotousRFT(ftSensorShankRecvID, ftSensorShankTransID1, ftSensorShankTransID2));
+    inputs.push_back(tsy1 = new Teensy(tsy1_ID_A1, tsy1_ID_A2, tsy1_ID_A3, tsy1_ID_B1, tsy1_ID_B2, tsy1_ID_B3));
+    inputs.push_back(tsy2 = new Teensy(tsy2_ID_A1, tsy2_ID_A2, tsy2_ID_A3, tsy2_ID_B1, tsy2_ID_B2, tsy2_ID_B3));
+
+    //inputs.push_back(tsy2 = new Teensy(tsy1_ID_B1, tsy1_ID_B2, tsy1_ID_B3));
+
 
     //Possible inputs: keyboard and joystick
     inputs.push_back(keyboard = new Keyboard());
+    //inputs.push_back(joystick = new Joystick());
 
     last_update_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() / 1e6;
 }
@@ -115,6 +121,19 @@ Eigen::VectorXd& RobotKE::getForces(int sensNum, int ft){
     }
 }
 
+Eigen::VectorXd& RobotKE::getTeensyData(Teensy *tsy, int imu_id, int data_id){
+    if (imu_id == 0) {
+        if (data_id == 0)    return tsy->getAccl(0);
+        else if (data_id == 1)  return tsy->getGyro(0);
+        else     return  tsy->getOrien(0);
+    }
+    else {
+        if (data_id == 0)    return tsy->getAccl(1);
+        else if (data_id == 1)  return tsy->getGyro(1);
+        else     return  tsy->getOrien(1);
+    }
+}
+
 bool RobotKE::startSensorStreaming(){
     spdlog::debug("start streaming");
     ftsensor1->startStream();
@@ -197,19 +216,17 @@ bool RobotKE::initialiseInputs() {
     return true;
 }
 
-void RobotKE::applyCalibration(int step) {
-    // \todo make step enum
-    if (step == 2){
-        joints[0]->setPositionOffset(qCalibration);
-        calibrated = true;
-        return;
-    }
-    else if (step == 1) {
-        spdlog::debug("qCalibrationSpring: {}", qCalibrationSpring);
-        ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring);
-        calibrated = false;
-        return;
-    }
+void RobotKE::applyCalibrationSpring() {
+    spdlog::debug("qCalibrationSpring: {}", qCalibrationSpring);
+    ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring);
+    calibrated = false;
+    return;
+}
+
+void RobotKE::applyCalibrationMotor(double springAngle) {
+    joints[0]->setPositionOffset(springAngle);
+    calibrated = true;
+    return;
 }
 
 void RobotKE::updateRobot() {
