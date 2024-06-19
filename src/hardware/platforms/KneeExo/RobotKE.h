@@ -92,9 +92,9 @@ class RobotKE : public Robot {
     double qCalibration = 0*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
     double qCalibrationSpring = -110*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
 
-    int ftSensorThighRecvID = 111;
-    int ftSensorThighTransID1 = 112;
-    int ftSensorThighTransID2 = 113;
+    int ftSensorThighRecvID = 236;
+    int ftSensorThighTransID1 = 237;
+    int ftSensorThighTransID2 = 238;
     int ftSensorShankRecvID = 230;
     int ftSensorShankTransID1 = 231;
     int ftSensorShankTransID2 = 232;
@@ -159,6 +159,13 @@ class RobotKE : public Robot {
     RobotousRFT *ftsensor2;
     Teensy *tsy1;
     Teensy *tsy2;
+
+     double shank_Fx_Offset = 0.;
+     double shank_Fy_Offset = 0.;
+     double shank_Mz_Offset = 0.;
+     double thigh_Fx_Offset = 0.;
+     double thigh_Fy_Offset = 0.;
+     double thigh_Mz_Offset = 0.;
 
     double getCalibSpringPos() {return qCalibrationSpring;}
 
