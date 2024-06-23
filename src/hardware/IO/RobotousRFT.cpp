@@ -112,3 +112,12 @@ bool RobotousRFT::stopStream() {
 bool RobotousRFT::getStreaming() {
     return streaming;
 }
+
+void RobotousRFT::getOffsets(float forceOffsetsOut[], float torqueOffsetsOut[]) {
+    forceOffsetsOut[0] = forceOffsets[0];
+    forceOffsetsOut[1] = forceOffsets[1];
+    forceOffsetsOut[2] = forceOffsets[2];
+    torqueOffsetsOut[0] = torqueOffsets[0];
+    torqueOffsetsOut[1] = torqueOffsets[1];
+    torqueOffsetsOut[2] = torqueOffsets[2];
+}

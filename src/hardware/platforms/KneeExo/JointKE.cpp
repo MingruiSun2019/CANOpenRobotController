@@ -109,14 +109,14 @@ setMovementReturnCode_t JointKE::setVelocity(double dqd) {
                 if (std::isfinite(dqd)) {
                     if (driveMode == CM_PROFILE_VELOCITY_CONTROL) {
 
-                        spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
+                        //spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
 
                         drive->setVel(jointVelocityToDriveUnit(dqd));
                         drive->velControlUpdateControlword();
                         return SUCCESS;
                     }
                     else if (driveMode == CM_CYCLIC_VELOCITY_CONTROL){
-                        spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
+                        //spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
                         drive->setVel(jointVelocityToDriveUnit(dqd));
                         return SUCCESS;
                     } else {

@@ -201,6 +201,7 @@ class RobotKE : public Robot {
     * \param positions a vector of target positions - applicable for each of the actauted joints
     * \return MovementCode representing success or failure of the application
     */
+    setMovementReturnCode_t applyMotorPosition(double positions, double velocities);
     setMovementReturnCode_t applySpringPosition(double positions, double velocities); //joint space velocity control
     setMovementReturnCode_t applySpringPositionTorControl(double positions, double velocities, double acc); // joint space torque control
 

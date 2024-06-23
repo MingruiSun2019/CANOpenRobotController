@@ -138,5 +138,11 @@ class RobotousRFT : public InputDevice {
          *  
          */
         void setOffsets(Eigen::VectorXd forceOffset, Eigen::VectorXd torqueOffset);
+
+        /**
+         * \brief Get the offsets for the forces and torques
+         *  
+         */
+        void getOffsets(float forceOffsetsOut[], float torqueOffsetsOut[]);
 };
 #endif

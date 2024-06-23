@@ -465,6 +465,40 @@ setMovementReturnCode_t RobotKE::applySpringPosition(double positions, double ve
     return returnValue;
 }
 
+setMovementReturnCode_t RobotKE::applyMotorPosition(double positions, double velocities) {
+    // Make sure it is in velocity control mode
+    setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
+
+    float gainP = 2;
+    float gainI = 0.4;
+
+    auto p = joints[KNEE];
+
+    float actualMotorPos = ((JointKE *)p)->getPosition();
+    float targetMotorPos = positions;
+    float targetMotorVel = velocities;
+    // make it a PI
+    spdlog::debug("targetSpringVel: {}, targetSprigPos: {}, actualSpringPos: {}", targetMotorVel, actualMotorPos, actualMotorPos);
+
+    errAcumu += targetMotorPos - actualMotorPos;
+    float targetVel = targetMotorVel + gainP * (targetMotorPos - actualMotorPos);// + gainI * errAcumu;
+    targetVel = targetVel * 144.;  //scale gain for motor
+    spdlog::debug("Spring Position: {}, velocity control: {}", actualMotorPos, targetVel);
+    spdlog::debug("P term: {}, I term: {}", gainP * (targetMotorPos - actualMotorPos), gainI * errAcumu);
+
+    setMovementReturnCode_t setPosCode = ((JointKE *)p)->setVelocity(targetVel);
+    if (setPosCode == INCORRECT_MODE) {
+        spdlog::error("Joint {} : is not in Velocity Control", p->getId());
+        returnValue = INCORRECT_MODE;
+    } else if (setPosCode != SUCCESS) {
+        // Something bad happened
+        spdlog::error("Joint {} position error : {} ", p->getId(), setMovementReturnCodeString[setPosCode]);
+        returnValue = UNKNOWN_ERROR;
+    }
+
+    return returnValue;
+}
+
 setMovementReturnCode_t RobotKE::applySpringPositionTorControl(double positions, double velocities, double acc) {
     // Make sure it is in velocity control mode
     setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
