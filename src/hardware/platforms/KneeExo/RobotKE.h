@@ -76,7 +76,7 @@ class RobotKE : public Robot {
     *  if one is provided to the constructor and the parameter is defined in the configuration file.
     */
     /* @{ */
-    double dqMax = 6;                                               //!< Max joint speed (rpm)
+    double dqMax = 28000;                                               //!< Max joint (4000/144) speed (rpm)
     double tauMax = 26;                                                       //!< Max joint torque (Nm)
     std::vector<double> iPeakDrives = {2.72, 2.72, 2.72};                           //!< Drive max current
     std::vector<double> motorCstt = {0.0749, 0.0749, 0.0749};                          //!< Motor constants (Nm/A)
@@ -118,7 +118,7 @@ class RobotKE : public Robot {
     //double qCalibrationSpring = 0.*M_PI/180.;             //!< Calibration configuration: posture in which the robot is when using the calibration procedure
 
     /*@}*/
-    motorProfile controlMotorProfile{100, 10000, 10000};
+    motorProfile controlMotorProfile{4000, 10000, 10000};
 
     KETool *endEffTool; //!< End-effector representation (transformation and mass)
 

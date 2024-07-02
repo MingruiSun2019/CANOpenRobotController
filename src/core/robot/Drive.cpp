@@ -71,7 +71,7 @@ bool Drive::setPos(int position) {
 }
 
 bool Drive::setVel(int velocity) {
-    spdlog::debug("Drive {} Writing {} to 0x60FF", NodeID, velocity);
+    //spdlog::debug("Drive {} Writing {} to 0x60FF", NodeID, velocity);
     targetVel = velocity;
     return true;
 }

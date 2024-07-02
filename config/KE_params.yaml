@@ -25,7 +25,7 @@
 #
 
 KNEE_EXO:
-  dqMax: 360 # Max joint speed (deg.s-1) Set to 1 rot/s
+  dqMax: 1592 # Max joint speed (deg.s-1) Set to 1 rot/s
   tauMax: 26 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
   iPeakDrives: [2.72, 2.72, 2.72] #Drive peak current (I peak): Values look wrong but work on real system in combination w/ below motor constants.
   motorCstt: [0.0749, 0.0749, 0.0749] #Motors constants

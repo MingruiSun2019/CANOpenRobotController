@@ -116,7 +116,7 @@ setMovementReturnCode_t JointKE::setVelocity(double dqd) {
                         return SUCCESS;
                     }
                     else if (driveMode == CM_CYCLIC_VELOCITY_CONTROL){
-                        //spdlog::debug("q shaft: {}, q_motor: {}", dqd, jointVelocityToDriveUnit(dqd));
+                        //spdlog::debug("dq min: {}, dq max: {}", dqMin, dqMax);
                         drive->setVel(jointVelocityToDriveUnit(dqd));
                         return SUCCESS;
                     } else {

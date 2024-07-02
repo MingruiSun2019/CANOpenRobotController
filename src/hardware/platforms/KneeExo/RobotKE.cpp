@@ -61,11 +61,11 @@ bool RobotKE::loadParametersFromYAML(YAML::Node params) {
     YAML::Node params_r=params[robotName]; //Specific node corresponding to the robot
 
     if(params_r["dqMax"]){
-        dqMax = fmin(fmax(0., params_r["dqMax"].as<double>()), 360.) * M_PI / 180.; //Hard constrained for safety
+        dqMax = fmin(fmax(0., params_r["dqMax"].as<double>()), 1592.) * M_PI / 180.; //Hard constrained for safety
     }
 
     if(params["tauMax"]){
-        tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 80.); //Hard constrained for safety
+        tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 26.); //Hard constrained for safety
     }
 
     fillParamVectorFromYaml(params_r["iPeakDrives"], iPeakDrives);
@@ -482,7 +482,7 @@ setMovementReturnCode_t RobotKE::applyMotorPosition(double positions, double vel
     // Make sure it is in velocity control mode
     setMovementReturnCode_t returnValue = SUCCESS;  //TODO: proper return error code (not only last one)
 
-    float gainP = 2;
+    float gainP = 20;
     float gainI = 0.4;
 
     auto p = joints[KNEE];
@@ -491,13 +491,14 @@ setMovementReturnCode_t RobotKE::applyMotorPosition(double positions, double vel
     float targetMotorPos = positions;
     float targetMotorVel = velocities;
     // make it a PI
-    spdlog::debug("targetSpringVel: {}, targetSprigPos: {}, actualSpringPos: {}", targetMotorVel, actualMotorPos, actualMotorPos);
+    //spdlog::debug("targetSpringVel: {}, targetSprigPos: {}, actualSpringPos: {}", targetMotorVel, actualMotorPos, actualMotorPos);
 
     errAcumu += targetMotorPos - actualMotorPos;
     float targetVel = targetMotorVel + gainP * (targetMotorPos - actualMotorPos);// + gainI * errAcumu;
-    targetVel = targetVel * 144.;  //scale gain for motor
-    spdlog::debug("Spring Position: {}, velocity control: {}", actualMotorPos, targetVel);
-    spdlog::debug("P term: {}, I term: {}", gainP * (targetMotorPos - actualMotorPos), gainI * errAcumu);
+    //targetVel = targetVel * 144.;  //scale gain for motor
+    targetVel = -targetVel;  //invert direction
+    //spdlog::debug("Target motor Position: {}, Actual motor position: {}, velocity control: {}", targetMotorPos, actualMotorPos, targetVel);
+    //spdlog::debug("P term: {}, I term: {}", gainP * (targetMotorPos - actualMotorPos), gainI * errAcumu);
 
     setMovementReturnCode_t setPosCode = ((JointKE *)p)->setVelocity(targetVel);
     if (setPosCode == INCORRECT_MODE) {
