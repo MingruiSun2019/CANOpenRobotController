@@ -268,7 +268,18 @@ public:
             spdlog::drop(loggerName_);
         isStarted_ = false;
         isInitialized_ = false;
+        spdlog::debug("Logger {} is ended", loggerName_);
     }
+
+    void endLog_clearItems(){
+        if(isInitialized_)
+            spdlog::drop(loggerName_);
+        isStarted_ = false;
+        isInitialized_ = false;
+        spdlog::debug("Logger {} is ended, items deleted", loggerName_);
+        vectorOfLogElements.clear();
+    }
+
 };
 
 #endif //SRC_LOGHELPER_H

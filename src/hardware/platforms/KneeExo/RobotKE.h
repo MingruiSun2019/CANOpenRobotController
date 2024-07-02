@@ -252,6 +252,7 @@ class RobotKE : public Robot {
     *  q=qcalibration in current configuration.
     */
     void applyCalibrationSpring();
+    void applyCalibrationSpring(double springAngleOffset);
     void applyCalibrationMotor(double springAngle);
 
     bool isCalibrated() {return calibrated;}
@@ -262,6 +263,11 @@ class RobotKE : public Robot {
     bool startSensorStreaming();
     bool stopSensorStreaming();
     bool sensorCalibration();
+
+    bool needCalib = true;
+    double calibParams[14] = {0};
+
+    void setCalibParams(double params[]);
 
     Eigen::VectorXd& getTeensyData(Teensy *tsy, int imu_id, int data_id);
 

@@ -109,6 +109,12 @@ int RobotKE::getCommandID(){
     return ftsensor1->getCommandID();
 }
 
+void RobotKE::setCalibParams(double params[]) {
+    for (int i = 0; i < 14; i++) {
+        calibParams[i] = params[i];
+    }
+}
+
 Eigen::VectorXd& RobotKE::getForces(int sensNum, int ft){
     //spdlog::debug("Geting FT sensors ID");
     if (sensNum == 1) {
@@ -219,6 +225,13 @@ bool RobotKE::initialiseInputs() {
 void RobotKE::applyCalibrationSpring() {
     spdlog::debug("qCalibrationSpring: {}", qCalibrationSpring);
     ((JointKE *)joints[0])->setExtraPositionOffset(qCalibrationSpring);
+    calibrated = false;
+    return;
+}
+
+void RobotKE::applyCalibrationSpring(double springAngleOffset) {
+    spdlog::debug("springAngleOffset: {}", springAngleOffset);
+    ((JointKE *)joints[0])->setExtraPositionOffset(springAngleOffset);
     calibrated = false;
     return;
 }
