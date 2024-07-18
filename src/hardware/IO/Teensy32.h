@@ -79,6 +79,8 @@ class Teensy : public InputDevice {
         Eigen::VectorXd accl_A;
         Eigen::VectorXd gyro_A;
         Eigen::VectorXd orien_A;
+        Eigen::VectorXd linAccel;  // Linear acceleration of sensor id 0 for teensy upper leg, sensor id 1 for teensy lower leg
+
         Eigen::VectorXd accl_B;
         Eigen::VectorXd gyro_B;
         Eigen::VectorXd orien_B;
@@ -127,5 +129,7 @@ class Teensy : public InputDevice {
          * \return Eigen::VectorXd 
          */
         Eigen::VectorXd& getOrien(int senosr_id);
+
+        Eigen::VectorXd& getLinAccl();
 };
 #endif

@@ -103,7 +103,7 @@ setMovementReturnCode_t JointKE::setPosition(double qd) {
 }
 
 setMovementReturnCode_t JointKE::setVelocity(double dqd) {
-    if (calibrated) {
+    //if (calibrated) {
         if (dqd >= dqMin && dqd <= dqMax && std::isfinite(dqd)) {
             if (actuated) {
                 if (std::isfinite(dqd)) {
@@ -133,9 +133,10 @@ setMovementReturnCode_t JointKE::setVelocity(double dqd) {
         } else {
             return OUTSIDE_LIMITS;
         }
-    } else {
-        return NOT_CALIBRATED;
-    }
+    
+    //else {
+    //    return NOT_CALIBRATED;
+    //}
 }
 
 setMovementReturnCode_t JointKE::setTorque(double taud) {

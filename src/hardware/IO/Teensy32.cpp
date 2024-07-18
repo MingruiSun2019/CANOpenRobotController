@@ -17,6 +17,7 @@ Teensy::Teensy(int responseID1_, int responseID2_, int responseID3_, int respons
     accl_A = Eigen::VectorXd::Zero(3);
     gyro_A = Eigen::VectorXd::Zero(3);
     orien_A = Eigen::VectorXd::Zero(4);
+    linAccel = Eigen::VectorXd::Zero(4);
     accl_B = Eigen::VectorXd::Zero(3);
     gyro_B = Eigen::VectorXd::Zero(3);
     orien_B = Eigen::VectorXd::Zero(4);
@@ -98,9 +99,13 @@ void Teensy::updateInput() {
         int16_t accl_A_x = rawData_A[0] * 256 + rawData_A[1];
         int16_t accl_A_y = rawData_A[2] * 256 + rawData_A[3];
         int16_t accl_A_z = rawData_A[4] * 256 + rawData_A[5];
+        int16_t linAccl_x = rawData_A[6] * 256 + rawData_A[7];
+
         int16_t gyro_A_x = rawData_A[8] * 256 + rawData_A[9];
         int16_t gyro_A_y = rawData_A[10] * 256 + rawData_A[11];
         int16_t gyro_A_z = rawData_A[12] * 256 + rawData_A[13];
+        int16_t linAccl_y = rawData_A[14] * 256 + rawData_A[15];
+
         int16_t orien_A_w = rawData_A[16] * 256 + rawData_A[17];
         int16_t orien_A_x = rawData_A[18] * 256 + rawData_A[19];
         int16_t orien_A_y = rawData_A[20] * 256 + rawData_A[21];
@@ -109,15 +114,19 @@ void Teensy::updateInput() {
         int16_t accl_B_x = rawData_B[0] * 256 + rawData_B[1];
         int16_t accl_B_y = rawData_B[2] * 256 + rawData_B[3];
         int16_t accl_B_z = rawData_B[4] * 256 + rawData_B[5];
+        int16_t linAccl_z = rawData_B[6] * 256 + rawData_B[7];
+        
         int16_t gyro_B_x = rawData_B[8] * 256 + rawData_B[9];
         int16_t gyro_B_y = rawData_B[10] * 256 + rawData_B[11];
         int16_t gyro_B_z = rawData_B[12] * 256 + rawData_B[13];
+        int16_t linAccl_vec = rawData_B[14] * 256 + rawData_B[15];
+
         int16_t orien_B_w = rawData_B[16] * 256 + rawData_B[17];
         int16_t orien_B_x = rawData_B[18] * 256 + rawData_B[19];
         int16_t orien_B_y = rawData_B[20] * 256 + rawData_B[21];
         int16_t orien_B_z = rawData_B[22] * 256 + rawData_B[23];
 
-        accl_A[0] = range_mapping(accl_A_x, accl_range, INT16_MAX) ;
+        accl_A[0] = range_mapping(accl_A_x, accl_range, INT16_MAX);
         accl_A[1] = range_mapping(accl_A_y, accl_range, INT16_MAX);
         accl_A[2] = range_mapping(accl_A_z, accl_range, INT16_MAX);
         gyro_A[0] = range_mapping(gyro_A_x, gyro_range, INT16_MAX);
@@ -138,6 +147,11 @@ void Teensy::updateInput() {
         orien_B[1] = range_mapping(orien_B_x, oren_quant_range, INT16_MAX);
         orien_B[2] = range_mapping(orien_B_y, oren_quant_range, INT16_MAX);
         orien_B[3] = range_mapping(orien_B_z, oren_quant_range, INT16_MAX);
+
+        linAccel[0] = range_mapping(linAccl_x, accl_range, INT16_MAX);
+        linAccel[1] = range_mapping(linAccl_y, accl_range, INT16_MAX);
+        linAccel[2] = range_mapping(linAccl_z, accl_range, INT16_MAX);
+        linAccel[3] = range_mapping(linAccl_vec, accl_range, INT16_MAX);
 
 
         // This is not that efficient if data is stopped. This could be modified to do a check first
@@ -182,4 +196,8 @@ Eigen::VectorXd& Teensy::getOrien(int sensor_id) {
     } else {
         return orien_B;
     }
+}
+
+Eigen::VectorXd& Teensy::getLinAccl() {
+    return linAccel;
 }

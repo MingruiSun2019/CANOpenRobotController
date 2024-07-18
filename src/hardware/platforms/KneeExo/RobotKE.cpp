@@ -131,12 +131,14 @@ Eigen::VectorXd& RobotKE::getTeensyData(Teensy *tsy, int imu_id, int data_id){
     if (imu_id == 0) {
         if (data_id == 0)    return tsy->getAccl(0);
         else if (data_id == 1)  return tsy->getGyro(0);
-        else     return  tsy->getOrien(0);
+        else if (data_id == 2)    return  tsy->getOrien(0);
+        else   return tsy->getLinAccl();
     }
     else {
         if (data_id == 0)    return tsy->getAccl(1);
         else if (data_id == 1)  return tsy->getGyro(1);
-        else     return  tsy->getOrien(1);
+        else if (data_id == 2)  return  tsy->getOrien(1);
+        else return tsy->getLinAccl();
     }
 }
 

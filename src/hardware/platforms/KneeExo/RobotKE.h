@@ -257,6 +257,7 @@ class RobotKE : public Robot {
 
     bool isCalibrated() {return calibrated;}
     void decalibrate() {calibrated = false;}
+    void encalibrate() {calibrated = true;}
 
     int getCommandID();
     Eigen::VectorXd& getForces(int sensNum, int ft);

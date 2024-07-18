@@ -24,7 +24,7 @@ include(../KEDemoMachine/app.cmake) ## example only, needfined to be de
 
 ## Select desired logging level (Options: TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL, OFF)
 ## INFO is the recommended level in normal operation
-set(CORC_LOGGING_LEVEL DEBUG)
+set(CORC_LOGGING_LEVEL INFO)
 
 ################################################################################
 
